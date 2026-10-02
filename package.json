@@ -1,5 +1,5 @@
 {
-    "name": "plantillaphaser",
+    "name": "mvjvibecoding",
     "version": "1.0.0",
     "main": "./dist-electron/main.js",
     "description": "Plantilla para juegos con Phaser",
@@ -12,15 +12,15 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/cleongh/plantillaphaser.git"
+        "url": "git+https://github.com/cleongh/mvjvibecoding.git"
     },
     "keywords": [],
     "author": "Carlos León <cleon@ucm.es>",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/cleongh/plantillaphaser/issues"
+        "url": "https://github.com/cleongh/mvjvibecoding/issues"
     },
-    "homepage": "https://github.com/cleongh/plantillaphaser#readme",
+    "homepage": "https://github.com/cleongh/mvjvibecoding#readme",
     "type": "module",
     "devDependencies": {
         "electron": "^44.4.5",
