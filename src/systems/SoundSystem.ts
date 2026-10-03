@@ -23,27 +23,39 @@ export default class SoundSystem {
     if (!this.context) {
       this.context = new AudioContext();
       this.master = this.context.createGain();
-      this.master.gain.value = 0.45;
+      this.master.gain.value = 0.8;
       this.master.connect(this.context.destination);
     }
     if (this.context.state === 'suspended') void this.context.resume();
   };
 
   constructor() {
-    window.addEventListener('pointerdown', this.unlockHandler);
-    window.addEventListener('keydown', this.unlockHandler);
+    window.addEventListener('pointerdown', this.unlockHandler, true);
+    window.addEventListener('keydown', this.unlockHandler, true);
   }
 
   play(cue: SoundCue): void {
     this.unlockHandler();
     if (this.muted || !this.context || !this.master) return;
+    const context = this.context;
+    if (context.state !== 'running') {
+      void context.resume().then(() => {
+        if (!this.muted && this.context === context && context.state === 'running') this.playNotes(cue);
+      });
+      return;
+    }
+    this.playNotes(cue);
+  }
+
+  private playNotes(cue: SoundCue): void {
+    if (!this.context || !this.master) return;
     const now = this.context.currentTime;
     let offset = 0;
     for (const note of cues[cue]) {
       const oscillator = this.context.createOscillator();
       const volume = this.context.createGain();
       const start = now + offset;
-      const peak = note.volume ?? 0.035;
+      const peak = Math.min(0.24, (note.volume ?? 0.08) * 1.8);
       oscillator.type = note.waveform ?? 'sine';
       oscillator.frequency.setValueAtTime(note.frequency, start);
       volume.gain.setValueAtTime(0.0001, start);
@@ -63,8 +75,8 @@ export default class SoundSystem {
   }
 
   destroy(): void {
-    window.removeEventListener('pointerdown', this.unlockHandler);
-    window.removeEventListener('keydown', this.unlockHandler);
+    window.removeEventListener('pointerdown', this.unlockHandler, true);
+    window.removeEventListener('keydown', this.unlockHandler, true);
     if (this.context && this.context.state !== 'closed') void this.context.close();
   }
 }

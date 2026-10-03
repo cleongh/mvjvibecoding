@@ -16,21 +16,12 @@
         {
             "type": "chrome",
             "request": "attach",
-            "name": "Ejecutar y depurar en Electron",
+            "name": "Ejecutar en Electron",
             "port": 9222,
             "webRoot": "${workspaceFolder}",
             "timeout": 30000,
             "preLaunchTask": "npm: electron",
             "postDebugTask": "terminar electron"
-        }
-    ],
-    "compounds": [
-        {
-            "name": "Ejecutar en Electron",
-            "configurations": [
-                "Ejecutar y depurar en Electron"
-            ],
-            "stopAll": true
         }
     ]
 }
