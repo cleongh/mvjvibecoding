@@ -1,16 +1,23 @@
-import { BrowserWindow as e, app as t } from "electron";
-import * as n from "path";
-//#region main.js
-var r;
-function i() {
-	r = new e({}), r.setMenu(null), process.env.VITE_DEV_SERVER_URL ? r.loadURL(new URL("index.electron.html", process.env.VITE_DEV_SERVER_URL).toString()) : r.loadFile(n.join(import.meta.dirname, "../dist/index.electron.html")), r.on("closed", () => r = null);
+import { BrowserWindow, app } from "electron";
+import path from "node:path";
+//#region main.ts
+var mainWindow = null;
+function createWindow() {
+	const window = new BrowserWindow({});
+	mainWindow = window;
+	window.setMenu(null);
+	if (process.env.VITE_DEV_SERVER_URL) window.loadURL(new URL("index.electron.html", process.env.VITE_DEV_SERVER_URL).toString());
+	else window.loadFile(path.join(import.meta.dirname, "../dist/index.electron.html"));
+	window.on("closed", () => {
+		mainWindow = null;
+	});
 }
-t.whenReady().then(() => {
-	i();
-}), t.on("window-all-closed", () => {
-	process.platform !== "darwin" && t.quit();
-}), t.on("activate", () => {
-	r ?? i();
+app.whenReady().then(createWindow);
+app.on("window-all-closed", () => {
+	if (process.platform !== "darwin") app.quit();
+});
+app.on("activate", () => {
+	if (mainWindow === null) createWindow();
 });
 //#endregion
 export {};
