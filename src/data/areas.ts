@@ -58,13 +58,13 @@ export const areas = {
           { t: 'water', x: 11, y: 5, w: 8, h: 3 },
           { t: 'tree', x: 3, y: 3, w: 3, h: 3 },
         ],
-        enemies: [['slime', 7, 12], ['slime', 22, 12], ['slime', 24, 4]],
+        enemies: [['slime', 7, 12], ['shooter', 22, 12], ['slime', 24, 4]],
         objects: [{ kind: 'pickup', x: 26, y: 14, contents: piece }],
       },
       {
         c: 2, r: 0,
         blocks: [{ t: 'wall', x: 10, y: 1, w: 10, h: 2 }],
-        enemies: [['skeleton', 6, 10], ['skeleton', 23, 11]],
+        enemies: [['shooter', 6, 10], ['skeleton', 23, 11], ['shooter', 15, 8]],
         objects: [{ kind: 'portal', x: 14, y: 3, to: 'dungeon2' }],
       },
       {

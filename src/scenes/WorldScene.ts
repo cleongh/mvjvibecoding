@@ -34,9 +34,11 @@ export default class WorldScene extends Phaser.Scene {
   area!: AreaDefinition;
   enemies: Enemy[] = [];
   pickups: Pickup[] = [];
+  projectiles: Phaser.Physics.Arcade.Sprite[] = [];
   interactables: InteractableObject[] = [];
   solids!: Phaser.GameObjects.Group;
   enemyGroup!: Phaser.GameObjects.Group;
+  projectileGroup!: Phaser.GameObjects.Group;
   ended = false;
   changingRoom = false;
   blockedSince: number | null = null;
@@ -64,9 +66,11 @@ export default class WorldScene extends Phaser.Scene {
 
     this.enemies = [];
     this.pickups = [];
+    this.projectiles = [];
     this.interactables = [];
     this.solids = this.add.group();
     this.enemyGroup = this.add.group();
+    this.projectileGroup = this.add.group();
     this.ended = false;
     this.changingRoom = false;
     this.blockedSince = null;
@@ -81,6 +85,26 @@ export default class WorldScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.solids);
     this.physics.add.collider(this.enemyGroup, this.layer);
     this.physics.add.collider(this.enemyGroup, this.solids);
+    this.physics.add.overlap(this.projectileGroup, this.layer, (proj) => { proj.destroy(); });
+    this.physics.add.overlap(this.projectileGroup, this.solids, (proj) => { proj.destroy(); });
+    this.physics.add.overlap(this.projectileGroup, this.player, (playerObj, projObj) => {
+      const proj = projObj as Phaser.Physics.Arcade.Sprite;
+      const player = playerObj as Player;
+      proj.destroy();
+
+      const time = this.time.now;
+      const hasShield = !player.attacking;
+      if (hasShield) {
+        const dx = proj.x - player.x;
+        const dy = proj.y - player.y;
+        const dot = dx * player.facing.x + dy * player.facing.y;
+        if (dot > 0) {
+          this.soundFx.play('hit');
+          return;
+        }
+      }
+      player.takeDamage(1, proj.x, proj.y, time);
+    });
 
     this.setupCamera();
     this.listenToDialogueEvents();
@@ -196,6 +220,23 @@ export default class WorldScene extends Phaser.Scene {
   addEnemy(enemy: Enemy): void {
     this.enemies.push(enemy);
     this.enemyGroup.add(enemy);
+  }
+
+  spawnProjectile(x: number, y: number, targetX: number, targetY: number): void {
+    const angle = Math.atan2(targetY - y, targetX - x);
+    const offsetDistance = 24;
+    const spawnX = x + Math.cos(angle) * offsetDistance;
+    const spawnY = y + Math.sin(angle) * offsetDistance;
+
+    const proj = this.physics.add.sprite(spawnX, spawnY, 'star').setDepth(6);
+    proj.body.setCircle(6, 2, 2);
+    const speed = 180;
+    proj.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+    this.projectileGroup.add(proj);
+    this.soundFx.play('hit');
+    this.time.delayedCall(3000, () => {
+      if (proj.active) proj.destroy();
+    });
   }
 
   addInteractable(object: InteractableObject): void {

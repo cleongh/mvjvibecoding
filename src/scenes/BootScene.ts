@@ -121,10 +121,9 @@ function createSprites(scene: Phaser.Scene): void {
       g.fillStyle(0xffffff, 0.45).fillTriangle(16, 2, 10, 14, 16, 14);
     });
   }
-  makeTexture(scene, 'sword', 10, 40, (g) => {
-    g.fillStyle(0xdfe6ea).fillRect(3, 0, 4, 28);
-    g.fillStyle(0xe0b84e).fillRect(0, 28, 10, 4);
-    g.fillStyle(0x6b4429).fillRect(3, 32, 4, 8);
+  makeTexture(scene, 'star', 16, 16, (g) => {
+    g.fillStyle(0xf2e6c4).fillCircle(8, 8, 6);
+    g.fillStyle(0xe89b3f).fillCircle(8, 8, 3);
   });
 }
 

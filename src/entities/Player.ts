@@ -12,6 +12,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
   attacking = false;
   invulnerableUntil = 0;
   knockbackUntil = 0;
+  shieldSprite: Phaser.GameObjects.Rectangle;
   keys!: Record<'up' | 'down' | 'left' | 'right' | 'attack' | 'interact', Phaser.Input.Keyboard.Key>;
   cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 
@@ -26,6 +27,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
     this.attacking = false;
     this.invulnerableUntil = 0;
     this.knockbackUntil = 0;
+    this.shieldSprite = scene.add.rectangle(0, 0, 10, 14, 0x4180ab).setDepth(8).setVisible(false);
     this.keys = scene.input.keyboard!.addKeys({
       up: 'W', down: 'S', left: 'A', right: 'D', attack: 'SPACE', interact: 'E',
     }) as typeof this.keys;
@@ -46,18 +48,25 @@ export default class Player extends Phaser.GameObjects.Sprite {
     if (time < this.knockbackUntil) return;
     if (dir.lengthSq() === 0) {
       this.body.setVelocity(0, 0);
-      return;
+    } else {
+      dir.normalize();
+      const speed = this.attacking ? this.speed * 0.4 : this.speed;
+      this.body.setVelocity(dir.x * speed, dir.y * speed);
+      if (!this.attacking) {
+        const horizontal = Math.abs(dir.x) > Math.abs(dir.y);
+        this.facing = horizontal
+          ? { x: Math.sign(dir.x) as -1 | 1, y: 0 }
+          : { x: 0, y: Math.sign(dir.y) as -1 | 1 };
+      }
+      if (dir.x !== 0) this.setFlipX(dir.x < 0);
     }
-    dir.normalize();
-    const speed = this.attacking ? this.speed * 0.4 : this.speed;
-    this.body.setVelocity(dir.x * speed, dir.y * speed);
-    if (!this.attacking) {
-      const horizontal = Math.abs(dir.x) > Math.abs(dir.y);
-      this.facing = horizontal
-        ? { x: Math.sign(dir.x) as -1 | 1, y: 0 }
-        : { x: 0, y: Math.sign(dir.y) as -1 | 1 };
+
+    const hasShield = !this.attacking;
+    this.shieldSprite.setVisible(hasShield);
+    if (hasShield) {
+      const shieldDist = 12;
+      this.shieldSprite.setPosition(this.x + this.facing.x * shieldDist, this.y + this.facing.y * shieldDist);
     }
-    if (dir.x !== 0) this.setFlipX(dir.x < 0);
   }
 
   takeDamage(amount: number, fromX: number, fromY: number, time: number): void {

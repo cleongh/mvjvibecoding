@@ -74,12 +74,18 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
           this.setScale(1);
           this.clearTint();
           this.hitLanded = false;
-          this.body.setVelocity(this.direction.x * config.lunge.speed, this.direction.y * config.lunge.speed);
+          if (config.lunge.speed > 0) {
+            this.body.setVelocity(this.direction.x * config.lunge.speed, this.direction.y * config.lunge.speed);
+          } else {
+            if (this.scene && typeof (this.scene as any).spawnProjectile === 'function') {
+              (this.scene as any).spawnProjectile(this.x, this.y, player.x, player.y);
+            }
+          }
           this.changeState('attack', time, config.lunge.duration);
         }
         break;
       case 'attack':
-        if (!this.hitLanded && distance < config.hitRadius) {
+        if (config.lunge.speed > 0 && !this.hitLanded && distance < config.hitRadius) {
           this.hitLanded = true;
           player.takeDamage(config.damage, this.x, this.y, time);
         }
