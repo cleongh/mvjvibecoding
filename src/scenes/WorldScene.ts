@@ -85,9 +85,9 @@ export default class WorldScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.solids);
     this.physics.add.collider(this.enemyGroup, this.layer);
     this.physics.add.collider(this.enemyGroup, this.solids);
-    this.physics.add.overlap(this.projectileGroup, this.layer, (proj) => { proj.destroy(); });
+    this.physics.add.collider(this.projectileGroup, this.layer, (proj) => { proj.destroy(); });
     this.physics.add.overlap(this.projectileGroup, this.solids, (proj) => { proj.destroy(); });
-    this.physics.add.overlap(this.projectileGroup, this.player, (playerObj, projObj) => {
+    this.physics.add.overlap(this.projectileGroup, this.player, (projObj, playerObj) => {
       const proj = projObj as Phaser.Physics.Arcade.Sprite;
       const player = playerObj as Player;
       proj.destroy();
@@ -234,7 +234,7 @@ export default class WorldScene extends Phaser.Scene {
     proj.body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
     this.projectileGroup.add(proj);
     this.soundFx.play('hit');
-    this.time.delayedCall(3000, () => {
+    this.time.delayedCall(6000, () => {
       if (proj.active) proj.destroy();
     });
   }

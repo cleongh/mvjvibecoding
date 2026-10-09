@@ -50,6 +50,13 @@ function createSprites(scene: Phaser.Scene): void {
     g.fillStyle(0x314c3c).fillRect(8, 17, 16, 11);
     g.fillStyle(0xffe8a8).fillCircle(16, 10, 4);
   });
+  makeTexture(scene, 'sword', 32, 32, (g) => {
+    g.fillStyle(0xd8e1d7).fillTriangle(16, 1, 10, 19, 22, 19);
+    g.fillStyle(0x8b9b92).fillRect(14, 15, 4, 9);
+    g.fillStyle(0xd9b85f).fillRect(7, 21, 18, 3);
+    g.fillStyle(0x65452f).fillRect(14, 24, 4, 6);
+    g.fillStyle(0xd9b85f).fillCircle(16, 30, 2);
+  });
   makeTexture(scene, 'slime', 32, 32, (g) => {
     g.fillStyle(0x3d7a4c).fillEllipse(16, 21, 28, 20);
     g.fillStyle(0x6fbf73).fillEllipse(16, 18, 24, 16);

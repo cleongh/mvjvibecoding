@@ -115,3 +115,4 @@ src/star.ts~
 out/
 docs/
 historial.md
+.vscode/settings.json

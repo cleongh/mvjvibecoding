@@ -45,7 +45,7 @@ export const areas = {
           { t: 'tree', x: 22, y: 12, w: 4, h: 2 },
           { t: 'tree', x: 3, y: 12, w: 2, h: 3 },
         ],
-        enemies: [],
+        enemies: [['shooter', 19, 11]],
         objects: [
           { kind: 'npc', x: 9, y: 6, texture: 'npc_sage', dialogue: 'sage_intro', repeat: 'sage_repeat' },
           { kind: 'npc', x: 17, y: 6, texture: 'sign', dialogue: 'sign_start' },
