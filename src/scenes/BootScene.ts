@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import heroSpriteUrl from '../../assets/sprites/hero.svg?url&no-inline';
+import overworldMapUrl from '../../assets/maps/overworld.tmj?url&no-inline';
+import overworldTilesUrl from '../../assets/maps/overworld-tiles.svg?url&no-inline';
 import { areas } from '../data/areas.ts';
 import InventorySystem from '../systems/InventorySystem.ts';
 import DialogueSystem from '../systems/DialogueSystem.ts';
@@ -275,6 +277,8 @@ export default class BootScene extends Phaser.Scene {
 
   preload(): void {
     this.load.svg('hero', heroSpriteUrl, { width: 32, height: 32 });
+    this.load.image('overworld-tiles', overworldTilesUrl);
+    this.load.tilemapTiledJSON('overworld-map', overworldMapUrl);
   }
 
   create() {

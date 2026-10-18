@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="32" viewBox="0 0 192 32" shape-rendering="crispEdges">
+  <title>Tileset del mundo superior</title>
+  <desc>Seis tiles de 32 px: dos suelos, muro, agua, árbol y muro agrietado rompible.</desc>
+  <g id="floor-a">
+    <rect width="32" height="32" fill="#4b7553"/>
+    <path d="M3 7h2v2H3zm18 12h2v2h-2zm-9 7h1v1h-1z" fill="#527d58" opacity=".75"/>
+  </g>
+  <g id="floor-b" transform="translate(32)">
+    <rect width="32" height="32" fill="#527d58"/>
+    <path d="M4 20h2v2H4zm17-12h2v2h-2zm-9 14h1v1h-1z" fill="#4b7553" opacity=".8"/>
+  </g>
+  <g id="stone-wall" transform="translate(64)">
+    <rect width="32" height="32" fill="#6b6a5e"/>
+    <path d="M2 2h28v4H2zM2 20h28v10H2z" fill="#8c8b78" opacity=".7"/>
+    <path d="M3 9h11v2H3zm15 0h11v2H18zM8 14h15v2H8z" fill="#48483f" opacity=".7"/>
+  </g>
+  <g id="water" transform="translate(96)">
+    <rect width="32" height="32" fill="#3f78a8"/>
+    <path d="M5 8h14v2H5zm10 14h14v2H15z" fill="#b9e2eb" opacity=".55"/>
+    <path d="M2 16h7v1H2zm22-9h5v1h-5z" fill="#75b6d3" opacity=".7"/>
+  </g>
+  <g id="tree" transform="translate(128)">
+    <rect width="32" height="32" fill="#4b7553"/>
+    <ellipse cx="16" cy="22" rx="15" ry="8" fill="#17251e" opacity=".7"/>
+    <circle cx="16" cy="15" r="14" fill="#2f5144"/>
+    <circle cx="9" cy="18" r="8" fill="#2f5144"/>
+    <circle cx="23" cy="18" r="8" fill="#2f5144"/>
+    <circle cx="16" cy="9" r="8" fill="#2f5144"/>
+    <circle cx="11" cy="10" r="4" fill="#8c8b78" opacity=".55"/>
+    <circle cx="21" cy="14" r="3" fill="#8c8b78" opacity=".5"/>
+    <circle cx="10" cy="21" r="3" fill="#17251e" opacity=".7"/>
+    <circle cx="22" cy="22" r="3" fill="#17251e" opacity=".7"/>
+    <circle cx="16" cy="16" r="1" fill="#d9b85f"/>
+  </g>
+  <g id="cracked-wall" transform="translate(160)">
+    <rect width="32" height="32" fill="#6b6a5e"/>
+    <path d="M2 2h28v4H2zM2 27h28v3H2z" fill="#8c8b78"/>
+    <rect x="5" y="8" width="22" height="17" fill="#8c8b78"/>
+    <path d="m14 9-4 5 5 3-6 6m11-13-3 4 4 3-4 7" fill="none" stroke="#392c28" stroke-width="2"/>
+    <path d="m20 11-3 4 4 3-4 5" fill="none" stroke="#8f4934" stroke-width="1"/>
+    <circle cx="9" cy="11" r="1" fill="#3a2924"/>
+    <circle cx="24" cy="22" r="1" fill="#3a2924"/>
+  </g>
+</svg>

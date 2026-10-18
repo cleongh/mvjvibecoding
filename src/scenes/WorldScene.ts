@@ -12,7 +12,7 @@ import { jewelIds } from '../data/items.ts';
 import type InventorySystem from '../systems/InventorySystem.ts';
 import type DialogueSystem from '../systems/DialogueSystem.ts';
 import type SoundSystem from '../systems/SoundSystem.ts';
-import type { AreaDefinition, AreaId, AreaObjectSpec, AreaRoom, RewardContents } from '../data/types.ts';
+import type { AreaDefinition, AreaId, AreaObjectSpec, AreaRoom, EnemyId, ItemId, RewardContents } from '../data/types.ts';
 
 const ROOM_PX_W = ROOM_W * TILE;
 const ROOM_PX_H = ROOM_H * TILE;
@@ -47,6 +47,7 @@ export default class WorldScene extends Phaser.Scene {
   blockedSince: number | null = null;
   transitions!: TransitionSystem;
   layer!: Phaser.Tilemaps.TilemapLayer;
+  overworldMap: Phaser.Tilemaps.Tilemap | null = null;
   player!: Player;
   boomerang: Boomerang | null = null;
   bombs: Bomb[] = [];
@@ -121,6 +122,11 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   buildMap(): void {
+    if (this.areaId === 'overworld') {
+      this.buildTiledOverworld();
+      return;
+    }
+
     const { cols, rows, rooms, links } = this.area;
     const width = cols * ROOM_W;
     const height = rows * ROOM_H;
@@ -180,6 +186,18 @@ export default class WorldScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, width * TILE, height * TILE);
   }
 
+  private buildTiledOverworld(): void {
+    const map = this.make.tilemap({ key: 'overworld-map' });
+    this.overworldMap = map;
+    const tileset = map.addTilesetImage('overworld-tiles', 'overworld-tiles', TILE, TILE, 0, 0);
+    this.layer = map.createLayer('Terrain', tileset!, 0, 0, false) as Phaser.Tilemaps.TilemapLayer;
+    this.layer.setCollision([3, 4, 5, 6]);
+    this.layer.forEachTile((tile) => {
+      if (tile.index === 6) this.bombWallTiles.add(`${tile.x},${tile.y}`);
+    });
+    this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+  }
+
   toPixels(room: RoomPosition, tx: number, ty: number, size = 1): { x: number; y: number } {
     const localX = Math.round(tx * ROOM_W / ROOM_DATA_W);
     const localY = Math.round(ty * ROOM_H / ROOM_DATA_H);
@@ -204,6 +222,12 @@ export default class WorldScene extends Phaser.Scene {
   }
 
   buildRooms(): void {
+    if (this.areaId === 'overworld') {
+      this.buildTiledEntities();
+      this.buildBoss();
+      return;
+    }
+
     for (const room of this.area.rooms) {
       const roomKey = `${room.c},${room.r}`;
       for (const [type, tx, ty] of room.enemies || []) {
@@ -215,6 +239,75 @@ export default class WorldScene extends Phaser.Scene {
       });
     }
     this.buildBoss();
+  }
+
+  private buildTiledEntities(): void {
+    const objects = this.overworldMap?.getObjectLayer('Entities')?.objects || [];
+    for (const object of objects) {
+      const rawProperties = object.properties || [];
+      const properties = Array.isArray(rawProperties)
+        ? Object.fromEntries(rawProperties.map((property: { name: string; value: unknown }) => [property.name, property.value]))
+        : rawProperties as Record<string, unknown>;
+      const entityKind = (properties.kind as string | undefined) || object.type;
+      const objectId = `overworld:tiled:${object.id}`;
+      const room = {
+        c: Math.floor(object.x / ROOM_PX_W),
+        r: Math.floor(object.y / ROOM_PX_H),
+      };
+
+      switch (entityKind) {
+        case 'enemy': {
+          const enemyType = properties.enemy as EnemyId | undefined;
+          if (enemyType) this.addEnemy(new Enemy(this, object.x, object.y, enemyType, `${room.c},${room.r}`));
+          break;
+        }
+        case 'portal': {
+          const target = properties.to as AreaId | undefined;
+          if (!target) break;
+          this.add.image(object.x + TILE, object.y + TILE / 2, 'doorway').setDepth(1);
+          this.transitions.addPortal(object.x, object.y - TILE / 2, TILE * 2, TILE * 2, {
+            area: target,
+            spawn: properties.spawn as string | undefined,
+          });
+          break;
+        }
+        case 'chest':
+        case 'pickup': {
+          const contents: RewardContents | null = properties.heartPiece
+            ? { heartPiece: true }
+            : properties.item
+              ? { item: properties.item as ItemId }
+              : null;
+          if (!contents) break;
+          if (entityKind === 'chest') this.addInteractable(new Chest(this, objectId, object.x, object.y, contents));
+          else this.addPickup(objectId, object.x, object.y, contents);
+          break;
+        }
+        case 'lockedDoor':
+          if (!this.inventory.hasFlag(objectId)) this.addInteractable(new LockedDoor(this, objectId, object.x, object.y));
+          break;
+        case 'fountain':
+          this.addInteractable(new Fountain(this, object.x, object.y));
+          break;
+        case 'shop':
+          this.addInteractable(new Shopkeeper(this, object.x, object.y));
+          break;
+        case 'npc': {
+          const texture = properties.texture as string | undefined;
+          const dialogue = properties.dialogue as string | undefined;
+          if (texture && dialogue) {
+            this.addInteractable(new NPC(this, objectId, object.x, object.y, {
+              texture,
+              dialogue,
+              repeat: properties.repeat as string | undefined,
+            }));
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
   }
 
   buildObject(room: AreaRoom, spec: AreaObjectSpec, id: string): void {
@@ -373,7 +466,7 @@ export default class WorldScene extends Phaser.Scene {
       const tileCenterX = (tileX + 0.5) * TILE;
       const tileCenterY = (tileY + 0.5) * TILE;
       if (Phaser.Math.Distance.Between(x, y, tileCenterX, tileCenterY) > radius) continue;
-      this.layer.putTileAt(TILES.FLOOR_A, tileX, tileY);
+      this.layer.putTileAt(this.areaId === 'overworld' ? 1 : TILES.FLOOR_A, tileX, tileY);
       this.bombWallTiles.delete(tileKey);
     }
     this.bombs = this.bombs.filter((bomb) => bomb.active);
