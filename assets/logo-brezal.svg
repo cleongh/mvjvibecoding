@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="400" viewBox="0 0 900 400" fill="none">
+  <defs>
+    <linearGradient id="stone" x1="450" y1="24" x2="450" y2="260" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6B8A70"/>
+      <stop offset="1" stop-color="#243C35"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="200" y1="0" x2="700" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A77A3D"/>
+      <stop offset=".48" stop-color="#F2D995"/>
+      <stop offset="1" stop-color="#A77A3D"/>
+    </linearGradient>
+    <filter id="shadow" x="90" y="18" width="720" height="380" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+  <ellipse cx="450" cy="335" rx="310" ry="24" fill="#07120F" fill-opacity=".7" filter="url(#shadow)"/>
+  <path d="M450 20 497 61 558 45 579 99 642 108 632 168 685 202 650 251 670 302 610 322 595 376 536 361 495 398 450 362 405 398 364 361 305 376 290 322 230 302 250 251 215 202 268 168 258 108 321 99 342 45 403 61 450 20Z" fill="#152B26" stroke="url(#gold)" stroke-width="5"/>
+  <path d="M450 39 489 74 543 60 560 109 615 117 606 170 653 201 623 244 641 290 588 307 575 353 523 341 489 373 450 342 411 373 377 341 325 353 312 307 259 290 277 244 247 201 294 170 285 117 340 109 357 60 411 74 450 39Z" fill="#29443A" stroke="#78956F" stroke-opacity=".65" stroke-width="2"/>
+  <path d="M293 226 333 177 371 196 406 123 450 169 490 111 524 184 560 163 608 226V281H293V226Z" fill="url(#stone)" stroke="#A9B99A" stroke-width="3"/>
+  <path d="M371 195V281M406 145V281M490 133V281M524 188V281M333 222H568M319 252H585" stroke="#B4C4A5" stroke-opacity=".54" stroke-width="5"/>
+  <path d="M422 281V234C422 217 434 205 450 205S478 217 478 234V281" fill="#11231F" stroke="#D6C080" stroke-width="3"/>
+  <path d="M448 251C426 232 433 218 450 226 466 210 478 232 452 252L450 271 448 251Z" fill="#9FB47B"/>
+  <path d="M450 270C426 254 420 268 438 280M452 267C474 250 482 264 463 280" stroke="#729267" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="450" cy="194" r="8" fill="#F1D989"/>
+  <path d="M270 300H630" stroke="url(#gold)" stroke-width="3"/>
+  <text x="450" y="337" fill="#F2E7C5" font-family="Georgia, 'Times New Roman', serif" font-size="38" font-weight="700" letter-spacing="2" text-anchor="middle">LAS RUINAS</text>
+  <text x="450" y="377" fill="#F1D989" font-family="Georgia, 'Times New Roman', serif" font-size="43" font-weight="700" letter-spacing="5" text-anchor="middle">DEL BREZAL</text>
+</svg>

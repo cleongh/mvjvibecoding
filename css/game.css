@@ -1,6 +1,14 @@
+@font-face {
+  font-family: MedievalSharp;
+  src: url('../assets/fonts/MedievalSharp-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: MedievalSharp, Georgia, "Times New Roman", serif;
   background: #172b27;
   color: #f1e5bd;
 }
@@ -54,6 +62,7 @@ h1 {
 canvas {
   display: block;
   max-width: 100%;
+  height: auto;
   border: 2px solid #8d8059;
   box-shadow: 0 18px 55px #08120f99;
 }

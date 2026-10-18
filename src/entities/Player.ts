@@ -12,8 +12,8 @@ export default class Player extends Phaser.GameObjects.Sprite {
   attacking = false;
   invulnerableUntil = 0;
   knockbackUntil = 0;
-  shieldSprite: Phaser.GameObjects.Rectangle;
-  keys!: Record<'up' | 'down' | 'left' | 'right' | 'attack' | 'interact', Phaser.Input.Keyboard.Key>;
+  shieldSprite: Phaser.GameObjects.Image;
+  keys!: Record<'up' | 'down' | 'left' | 'right' | 'attack' | 'interact' | 'boomerang' | 'bomb', Phaser.Input.Keyboard.Key>;
   cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 
   constructor(scene: WorldScene, x: number, y: number, inventory: InventorySystem) {
@@ -27,21 +27,27 @@ export default class Player extends Phaser.GameObjects.Sprite {
     this.attacking = false;
     this.invulnerableUntil = 0;
     this.knockbackUntil = 0;
-    this.shieldSprite = scene.add.rectangle(0, 0, 10, 14, 0x4180ab).setDepth(8).setVisible(false);
+    this.shieldSprite = scene.add.image(0, 0, 'shield').setDepth(8).setVisible(false);
     this.keys = scene.input.keyboard!.addKeys({
-      up: 'W', down: 'S', left: 'A', right: 'D', attack: 'SPACE', interact: 'E',
+      up: 'W', down: 'S', left: 'A', right: 'D', attack: 'SPACE', interact: 'E', boomerang: 'B', bomb: 'X',
     }) as typeof this.keys;
     this.cursors = scene.input.keyboard!.createCursorKeys();
   }
 
-  readInput(): { dir: Phaser.Math.Vector2; attack: boolean; interact: boolean } {
+  readInput(): { dir: Phaser.Math.Vector2; attack: boolean; interact: boolean; boomerang: boolean; bomb: boolean } {
     const { keys, cursors } = this;
     const { JustDown } = Phaser.Input.Keyboard;
     const dir = new Phaser.Math.Vector2(
       Number(keys.right.isDown || cursors.right.isDown) - Number(keys.left.isDown || cursors.left.isDown),
       Number(keys.down.isDown || cursors.down.isDown) - Number(keys.up.isDown || cursors.up.isDown),
     );
-    return { dir, attack: JustDown(keys.attack), interact: JustDown(keys.interact) };
+    return {
+      dir,
+      attack: JustDown(keys.attack),
+      interact: JustDown(keys.interact),
+      boomerang: JustDown(keys.boomerang),
+      bomb: JustDown(keys.bomb),
+    };
   }
 
   applyMovement(dir: Phaser.Math.Vector2, time: number): void {
@@ -66,6 +72,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
     if (hasShield) {
       const shieldDist = 12;
       this.shieldSprite.setPosition(this.x + this.facing.x * shieldDist, this.y + this.facing.y * shieldDist);
+      this.shieldSprite.setRotation(this.facing.x === 0 ? (this.facing.y < 0 ? Math.PI : 0) : (this.facing.x < 0 ? Math.PI / 2 : -Math.PI / 2));
     }
   }
 

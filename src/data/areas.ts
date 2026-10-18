@@ -1,8 +1,13 @@
 export const TILE = 32;
-export const ROOM_W = 30;
-export const ROOM_H = 18;
+export const ROOM_W = 23;
+export const ROOM_H = 14;
+export const ROOM_DATA_W = 30;
+export const ROOM_DATA_H = 18;
 export const VIEW_Y = 64;
-export const TILES = { FLOOR_A: 0, FLOOR_B: 1, WALL: 2, WATER: 3, TREE: 4 };
+export const ROOM_SCALE = 2;
+export const GAME_WIDTH = ROOM_W * TILE * ROOM_SCALE;
+export const GAME_HEIGHT = (ROOM_H * TILE + VIEW_Y) * ROOM_SCALE;
+export const TILES = { FLOOR_A: 0, FLOOR_B: 1, WALL: 2, WATER: 3, TREE: 4, BOMB_WALL: 5 };
 
 import type { AreaDefinition, AreaId, AreaObjectSpec, BlockSpec, RewardContents } from './types.ts';
 
@@ -20,15 +25,15 @@ const potion: RewardContents = { item: 'health_potion' };
 const piece: RewardContents = { heartPiece: true };
 
 // Los huecos entre habitaciones se abren con links [c1, r1, c2, r2]: (c2, r2) está al este o al sur de (c1, r1).
-// Las coordenadas de bloques y objetos son locales a la habitación, en tiles (30x18).
+// Las coordenadas de bloques y objetos están definidas en la cuadrícula original de 30x18 tiles.
 export const areas = {
   overworld: {
     id: 'overworld',
     scene: 'world',
     title: 'El Brezal',
     theme: { floorA: 0x4b7553, floorB: 0x527d58, wall: 0x6b6a5e, wallLight: 0x8c8b78, water: 0x3f78a8, tree: 0x2f5144 },
-    cols: 3,
-    rows: 2,
+    cols: 4,
+    rows: 3,
     defaultSpawn: 'start',
     spawns: {
       start: { c: 0, r: 0, x: 14, y: 12 },
@@ -36,7 +41,13 @@ export const areas = {
       dungeon2: { c: 2, r: 0, x: 14, y: 7 },
       dungeon3: { c: 2, r: 1, x: 20, y: 10 },
     },
-    links: [[0, 0, 1, 0], [1, 0, 2, 0], [0, 1, 1, 1], [1, 1, 2, 1], [0, 0, 0, 1], [1, 0, 1, 1], [2, 0, 2, 1]],
+    links: [
+      [0, 0, 1, 0], [1, 0, 2, 0], [2, 0, 3, 0],
+      [0, 1, 1, 1], [1, 1, 2, 1], [2, 1, 3, 1],
+      [0, 2, 1, 2], [1, 2, 2, 2], [2, 2, 3, 2],
+      [0, 0, 0, 1], [1, 0, 1, 1], [2, 0, 2, 1], [3, 0, 3, 1],
+      [0, 1, 0, 2], [1, 1, 1, 2], [2, 1, 2, 2], [3, 1, 3, 2],
+    ],
     rooms: [
       {
         c: 0, r: 0,
@@ -45,17 +56,18 @@ export const areas = {
           { t: 'tree', x: 22, y: 12, w: 4, h: 2 },
           { t: 'tree', x: 3, y: 12, w: 2, h: 3 },
         ],
-        enemies: [['shooter', 19, 11]],
+        enemies: [],
         objects: [
           { kind: 'npc', x: 9, y: 6, texture: 'npc_sage', dialogue: 'sage_intro', repeat: 'sage_repeat' },
           { kind: 'npc', x: 17, y: 6, texture: 'sign', dialogue: 'sign_start' },
+          { kind: 'pickup', x: 15, y: 10, contents: { item: 'bomb' } },
           chest(potion),
         ],
       },
       {
         c: 1, r: 0,
         blocks: [
-          { t: 'water', x: 11, y: 5, w: 8, h: 3 },
+          { t: 'water', x: 11, y: 9, w: 8, h: 3 },
           { t: 'tree', x: 3, y: 3, w: 3, h: 3 },
         ],
         enemies: [['slime', 7, 12], ['shooter', 22, 12], ['slime', 24, 4]],
@@ -95,6 +107,54 @@ export const areas = {
           { kind: 'portal', x: 20, y: 13, to: 'dungeon3' },
           chest(piece),
         ],
+      },
+      {
+        c: 3, r: 0,
+        blocks: [
+          { t: 'wall', x: 4, y: 3, w: 8, h: 2 },
+          { t: 'tree', x: 22, y: 11, w: 4, h: 4 },
+        ],
+        enemies: [['skeleton', 8, 11], ['shooter', 20, 6]],
+        objects: [
+          { kind: 'pickup', x: 14, y: 5, contents: { item: 'bomb' } },
+          { kind: 'chest', x: 15, y: 9, contents: { item: 'boomerang' } },
+        ],
+      },
+      {
+        c: 3, r: 1,
+        blocks: [{ t: 'water', x: 7, y: 4, w: 7, h: 5 }, { t: 'tree', x: 20, y: 12, w: 4, h: 3 }],
+        enemies: [['slime', 5, 13], ['skeleton', 24, 5]],
+        objects: [{ kind: 'pickup', x: 17, y: 14, contents: piece }],
+      },
+      {
+        c: 0, r: 2,
+        blocks: [{ t: 'tree', x: 4, y: 4, w: 5, h: 5 }, { t: 'wall', x: 18, y: 12, w: 7, h: 2 }],
+        enemies: [['slime', 17, 6], ['skeleton', 23, 10]],
+        objects: [chest(potion)],
+      },
+      {
+        c: 1, r: 2,
+        blocks: [{ t: 'water', x: 10, y: 2, w: 8, h: 4 }, { t: 'tree', x: 22, y: 11, w: 3, h: 4 }],
+        enemies: [['shooter', 6, 7], ['slime', 20, 13]],
+        objects: [{ kind: 'shop', x: 14, y: 12 }],
+      },
+      {
+        c: 2, r: 2,
+        blocks: [{ t: 'wall', x: 5, y: 4, w: 7, h: 2 }, { t: 'water', x: 17, y: 10, w: 7, h: 4 }],
+        enemies: [['skeleton', 14, 7], ['shooter', 24, 6]],
+        objects: [{ kind: 'pickup', x: 14, y: 13, contents: piece }],
+      },
+      {
+        c: 3, r: 2,
+        blocks: [
+          { t: 'tree', x: 4, y: 3, w: 4, h: 4 },
+          { t: 'wall', x: 8, y: 6, w: 11, h: 1 },
+          { t: 'wall', x: 8, y: 6, w: 1, h: 6 },
+          { t: 'wall', x: 8, y: 11, w: 11, h: 1 },
+          { t: 'bombWall', x: 18, y: 6, w: 1, h: 6 },
+        ],
+        enemies: [['slime', 23, 9], ['shooter', 14, 13]],
+        objects: [{ kind: 'chest', x: 13, y: 9, contents: piece }],
       },
     ],
   },

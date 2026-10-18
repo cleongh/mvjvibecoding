@@ -101,6 +101,12 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
           this.changeState('chase', time);
         }
         break;
+      case 'stunned':
+        if (time >= this.stateUntil) {
+          this.clearTint();
+          this.changeState('chase', time);
+        }
+        break;
       default:
         break;
     }
@@ -114,11 +120,21 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.die();
       return;
     }
+    if (this.state === 'stunned') return;
     const away = new Phaser.Math.Vector2(this.x - fromX, this.y - fromY).normalize();
     this.setScale(1);
     this.setTint(0xff6666);
     this.body.setVelocity(away.x * 220, away.y * 220);
     this.changeState('hurt', time, 220);
+  }
+
+  stun(time: number): void {
+    if (this.state === 'dead') return;
+    this.body.setVelocity(0, 0);
+    this.setScale(1);
+    this.setTint(0x8bd8d0);
+    this.changeState('stunned', time, 8000);
+    this.scene.soundFx.play('hit');
   }
 
   die(): void {

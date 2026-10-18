@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { items } from '../data/items.ts';
+import { items, shopCatalog } from '../data/items.ts';
 import type { ItemDefinition, ItemId } from '../data/types.ts';
 
 const HEARTS_PER_CONTAINER_PIECES = 4;
@@ -8,9 +8,11 @@ export default class InventorySystem extends Phaser.Events.EventEmitter {
   maxHealth = 3;
   health = 3;
   heartPieces = 0;
+  rupees = 0;
   items: Partial<Record<ItemId, number>> = {};
   flags = new Set<string>();
   paused = false;
+  shopOpen = false;
   areaTitle = '';
 
   constructor() {
@@ -22,9 +24,11 @@ export default class InventorySystem extends Phaser.Events.EventEmitter {
     this.maxHealth = 3;
     this.health = 3;
     this.heartPieces = 0;
+    this.rupees = 0;
     this.items = {};
     this.flags = new Set();
     this.paused = false;
+    this.shopOpen = false;
     this.areaTitle = '';
     this.emit('changed');
   }
@@ -49,6 +53,37 @@ export default class InventorySystem extends Phaser.Events.EventEmitter {
   add(id: ItemId, amount = 1): void {
     this.items[id] = (this.items[id] || 0) + amount;
     this.emit('changed');
+  }
+
+  addRupees(amount: number): void {
+    this.rupees += amount;
+    this.notify(`+${amount} rupias`);
+    this.emit('changed');
+  }
+
+  openShop(): void {
+    this.shopOpen = true;
+    this.paused = true;
+    this.emit('changed');
+  }
+
+  closeShop(): void {
+    this.shopOpen = false;
+    this.paused = false;
+    this.emit('changed');
+  }
+
+  purchaseShopItem(index: number): boolean {
+    const offer = shopCatalog[index];
+    if (!offer) return false;
+    if (this.rupees < offer.price) {
+      this.notify('No tienes suficientes rupias');
+      return false;
+    }
+    this.rupees -= offer.price;
+    this.add(offer.item, offer.amount);
+    this.notify(`Comprado: ${items[offer.item].name}`);
+    return true;
   }
 
   count(id: ItemId): number {

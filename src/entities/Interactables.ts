@@ -85,6 +85,20 @@ export class Fountain extends Phaser.Physics.Arcade.Sprite {
   }
 }
 
+export class Shopkeeper extends Phaser.Physics.Arcade.Sprite {
+  declare scene: WorldScene;
+  readonly interactRadius = 54;
+
+  constructor(scene: WorldScene, x: number, y: number) {
+    super(scene, x, y, 'npc_shopkeeper');
+    addStaticBody(scene, this);
+  }
+
+  interact(): void {
+    this.scene.inventory.openShop();
+  }
+}
+
 export class Pickup extends Phaser.GameObjects.Image {
   declare scene: WorldScene;
   readonly id: string;
@@ -102,6 +116,25 @@ export class Pickup extends Phaser.GameObjects.Image {
     this.scene.inventory.setFlag(this.id);
     this.scene.soundFx.play('heartPiece' in this.contents ? 'heart' : 'pickup');
     grantReward(this.scene.inventory, this.contents);
+    this.destroy();
+  }
+}
+
+export class RupeePickup extends Phaser.GameObjects.Image {
+  declare scene: WorldScene;
+  readonly value: number;
+
+  constructor(scene: WorldScene, x: number, y: number, value: number) {
+    super(scene, x, y, 'item_rupee');
+    scene.add.existing(this);
+    this.setDepth(5);
+    this.value = value;
+    scene.tweens.add({ targets: this, y: y - 4, duration: 420, yoyo: true, repeat: -1 });
+  }
+
+  collect(): void {
+    this.scene.inventory.addRupees(this.value);
+    this.scene.soundFx.play('pickup');
     this.destroy();
   }
 }

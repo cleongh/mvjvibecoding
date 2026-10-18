@@ -1,11 +1,13 @@
 import Phaser from 'phaser';
 import Player from '../entities/Player.ts';
 import Enemy from '../entities/Enemy.ts';
+import Boomerang from '../entities/Boomerang.ts';
+import Bomb from '../entities/Bomb.ts';
 import NPC from '../entities/NPC.ts';
-import { Chest, LockedDoor, Fountain, Pickup } from '../entities/Interactables.ts';
+import { Chest, LockedDoor, Fountain, Pickup, RupeePickup, Shopkeeper } from '../entities/Interactables.ts';
 import CombatSystem from '../systems/CombatSystem.ts';
 import TransitionSystem from '../systems/TransitionSystem.ts';
-import { areas, TILE, ROOM_W, ROOM_H, VIEW_Y, TILES } from '../data/areas.ts';
+import { areas, TILE, ROOM_W, ROOM_H, ROOM_DATA_W, ROOM_DATA_H, VIEW_Y, ROOM_SCALE, TILES } from '../data/areas.ts';
 import { jewelIds } from '../data/items.ts';
 import type InventorySystem from '../systems/InventorySystem.ts';
 import type DialogueSystem from '../systems/DialogueSystem.ts';
@@ -14,7 +16,7 @@ import type { AreaDefinition, AreaId, AreaObjectSpec, AreaRoom, RewardContents }
 
 const ROOM_PX_W = ROOM_W * TILE;
 const ROOM_PX_H = ROOM_H * TILE;
-const BLOCK_TILES = { wall: TILES.WALL, water: TILES.WATER, tree: TILES.TREE };
+const BLOCK_TILES = { wall: TILES.WALL, water: TILES.WATER, tree: TILES.TREE, bombWall: TILES.BOMB_WALL };
 
 interface RoomPosition { c: number; r: number }
 type InteractableObject = Phaser.GameObjects.GameObject & {
@@ -34,6 +36,7 @@ export default class WorldScene extends Phaser.Scene {
   area!: AreaDefinition;
   enemies: Enemy[] = [];
   pickups: Pickup[] = [];
+  rupeePickups: RupeePickup[] = [];
   projectiles: Phaser.Physics.Arcade.Sprite[] = [];
   interactables: InteractableObject[] = [];
   solids!: Phaser.GameObjects.Group;
@@ -45,6 +48,9 @@ export default class WorldScene extends Phaser.Scene {
   transitions!: TransitionSystem;
   layer!: Phaser.Tilemaps.TilemapLayer;
   player!: Player;
+  boomerang: Boomerang | null = null;
+  bombs: Bomb[] = [];
+  bombWallTiles = new Set<string>();
   combat!: CombatSystem;
   room: RoomPosition = { c: 0, r: 0 };
 
@@ -66,7 +72,11 @@ export default class WorldScene extends Phaser.Scene {
 
     this.enemies = [];
     this.pickups = [];
+    this.rupeePickups = [];
     this.projectiles = [];
+    this.boomerang = null;
+    this.bombs = [];
+    this.bombWallTiles.clear();
     this.interactables = [];
     this.solids = this.add.group();
     this.enemyGroup = this.add.group();
@@ -123,8 +133,15 @@ export default class WorldScene extends Phaser.Scene {
         for (let x = 1; x < ROOM_W - 1; x++) data[oy + y][ox + x] = (x + y) % 2;
       }
       for (const block of room.blocks || []) {
-        for (let y = block.y; y < block.y + block.h; y++) {
-          for (let x = block.x; x < block.x + block.w; x++) data[oy + y][ox + x] = BLOCK_TILES[block.t];
+        const xStart = Math.floor(block.x * ROOM_W / ROOM_DATA_W);
+        const xEnd = Math.ceil((block.x + block.w) * ROOM_W / ROOM_DATA_W);
+        const yStart = Math.floor(block.y * ROOM_H / ROOM_DATA_H);
+        const yEnd = Math.ceil((block.y + block.h) * ROOM_H / ROOM_DATA_H);
+        for (let y = yStart; y < yEnd; y++) {
+          for (let x = xStart; x < xEnd; x++) {
+            data[oy + y][ox + x] = BLOCK_TILES[block.t];
+            if (block.t === 'bombWall') this.bombWallTiles.add(`${ox + x},${oy + y}`);
+          }
         }
       }
     }
@@ -135,9 +152,23 @@ export default class WorldScene extends Phaser.Scene {
       const horizontal = c2 > c1;
       for (let i = 0; i < 2; i++) {
         for (let j = 0; j < 2; j++) {
-          const x = horizontal ? ox + ROOM_W - 1 + j : ox + 14 + i;
-          const y = horizontal ? oy + 8 + i : oy + ROOM_H - 1 + j;
+          const x = horizontal ? ox + ROOM_W - 1 + j : ox + Math.floor(ROOM_W / 2) + i;
+          const y = horizontal ? oy + Math.floor(ROOM_H / 2) + i : oy + ROOM_H - 1 + j;
           data[y][x] = TILES.FLOOR_A;
+        }
+      }
+    }
+
+    for (const room of rooms) {
+      const ox = room.c * ROOM_W;
+      const oy = room.r * ROOM_H;
+      for (const portal of (room.objects || []).filter((object) => object.kind === 'portal')) {
+        const localX = Math.round(portal.x * ROOM_W / ROOM_DATA_W);
+        const localY = Math.round(portal.y * ROOM_H / ROOM_DATA_H);
+        for (let y = Math.max(1, localY - 1); y <= Math.min(ROOM_H - 2, localY + 2); y++) {
+          for (let x = Math.max(1, localX); x <= Math.min(ROOM_W - 2, localX + 1); x++) {
+            data[oy + y][ox + x] = TILES.FLOOR_A;
+          }
         }
       }
     }
@@ -145,14 +176,16 @@ export default class WorldScene extends Phaser.Scene {
     const map = this.make.tilemap({ data, tileWidth: TILE, tileHeight: TILE });
     const tileset = map.addTilesetImage(`tiles_${this.areaId}`, `tiles_${this.areaId}`, TILE, TILE, 0, 0);
     this.layer = map.createLayer(0, tileset!, 0, 0, false) as Phaser.Tilemaps.TilemapLayer;
-    this.layer.setCollision([TILES.WALL, TILES.WATER, TILES.TREE]);
+    this.layer.setCollision([TILES.WALL, TILES.WATER, TILES.TREE, TILES.BOMB_WALL]);
     this.physics.world.setBounds(0, 0, width * TILE, height * TILE);
   }
 
   toPixels(room: RoomPosition, tx: number, ty: number, size = 1): { x: number; y: number } {
+    const localX = Math.round(tx * ROOM_W / ROOM_DATA_W);
+    const localY = Math.round(ty * ROOM_H / ROOM_DATA_H);
     return {
-      x: (room.c * ROOM_W + tx) * TILE + (size * TILE) / 2,
-      y: (room.r * ROOM_H + ty) * TILE + (size * TILE) / 2,
+      x: (room.c * ROOM_W + localX) * TILE + (size * TILE) / 2,
+      y: (room.r * ROOM_H + localY) * TILE + (size * TILE) / 2,
     };
   }
 
@@ -165,8 +198,9 @@ export default class WorldScene extends Phaser.Scene {
 
   setupCamera(): void {
     const camera = this.cameras.main;
-    camera.setViewport(0, VIEW_Y, ROOM_PX_W, ROOM_PX_H);
-    camera.setScroll(this.room.c * ROOM_PX_W, this.room.r * ROOM_PX_H);
+    camera.setViewport(0, VIEW_Y * ROOM_SCALE, ROOM_PX_W * ROOM_SCALE, ROOM_PX_H * ROOM_SCALE);
+    camera.setZoom(ROOM_SCALE);
+    camera.centerOn((this.room.c + 0.5) * ROOM_PX_W, (this.room.r + 0.5) * ROOM_PX_H);
   }
 
   buildRooms(): void {
@@ -198,6 +232,9 @@ export default class WorldScene extends Phaser.Scene {
       case 'fountain':
         this.addInteractable(new Fountain(this, x, y));
         break;
+      case 'shop':
+        this.addInteractable(new Shopkeeper(this, x, y));
+        break;
       case 'npc':
         if (spec.texture && spec.dialogue) this.addInteractable(new NPC(this, id, x, y, spec as { texture: string; dialogue: string; repeat?: string }));
         break;
@@ -206,10 +243,12 @@ export default class WorldScene extends Phaser.Scene {
         break;
       case 'portal': {
         if (!spec.to) break;
-        const rectX = (room.c * ROOM_W + spec.x) * TILE;
-        const rectY = (room.r * ROOM_H + spec.y) * TILE;
+        const localX = Math.round(spec.x * ROOM_W / ROOM_DATA_W);
+        const localY = Math.round(spec.y * ROOM_H / ROOM_DATA_H);
+        const rectX = (room.c * ROOM_W + localX) * TILE;
+        const rectY = (room.r * ROOM_H + localY) * TILE;
         this.add.image(rectX + TILE, rectY + TILE / 2, 'doorway').setDepth(1);
-        this.transitions.addPortal(rectX, rectY, TILE * 2, TILE, { area: spec.to, spawn: spec.spawn });
+        this.transitions.addPortal(rectX, rectY - TILE / 2, TILE * 2, TILE * 2, { area: spec.to, spawn: spec.spawn });
         break;
       }
       default:
@@ -269,10 +308,75 @@ export default class WorldScene extends Phaser.Scene {
 
   onEnemyDefeated(enemy: Enemy): void {
     this.enemies = this.enemies.filter((other) => other !== enemy);
+    const drop = enemy.config.rupeeDrop;
+    if (drop && Math.random() < drop.chance) {
+      this.rupeePickups.push(new RupeePickup(this, enemy.x, enemy.y, drop.amount));
+    }
     if (!enemy.isBoss) return;
     this.inventory.setFlag(this.area.boss.flag);
     this.inventory.notify('¡Jefe derrotado!');
     this.spawnBossRewards();
+  }
+
+  throwBoomerang(): void {
+    if (!this.inventory.has('boomerang') || this.boomerang) return;
+    const { x, y } = this.player.facing;
+    this.boomerang = new Boomerang(
+      this,
+      this.player.x + x * 22,
+      this.player.y + y * 22,
+      this.player.facing,
+    );
+    this.soundFx.play('boomerang');
+  }
+
+  onBoomerangCaught(boomerang: Boomerang): void {
+    if (this.boomerang !== boomerang) return;
+    this.boomerang = null;
+  }
+
+  placeBomb(): void {
+    if (!this.inventory.has('bomb')) return;
+    this.inventory.remove('bomb');
+    const x = Math.floor(this.player.x / TILE) * TILE + TILE / 2;
+    const y = Math.floor(this.player.y / TILE) * TILE + TILE / 2;
+    const bomb = new Bomb(this, x, y);
+    this.bombs.push(bomb);
+    this.soundFx.play('bomb');
+  }
+
+  explodeBomb(x: number, y: number): void {
+    const radius = TILE * 2.75;
+    const blast = this.add.circle(x, y, 10, 0xf08b3e, 0.76).setDepth(12);
+    this.add.circle(x, y, 5, 0xffe6a1, 0.9).setDepth(13);
+    this.tweens.add({
+      targets: blast,
+      scale: radius / 10,
+      alpha: 0,
+      duration: 260,
+      onComplete: () => blast.destroy(),
+    });
+    this.soundFx.play('explosion');
+
+    const roomKey = `${Math.floor(x / ROOM_PX_W)},${Math.floor(y / ROOM_PX_H)}`;
+    const time = this.time.now;
+    this.enemies.filter((enemy) => enemy.room === roomKey && enemy.state !== 'dead')
+      .forEach((enemy) => {
+        if (Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y) <= radius) enemy.takeHit(2, x, y, time);
+      });
+    if (Phaser.Math.Distance.Between(x, y, this.player.x, this.player.y) <= radius) {
+      this.player.takeDamage(1, x + 1, y, time);
+    }
+
+    for (const tileKey of this.bombWallTiles) {
+      const [tileX, tileY] = tileKey.split(',').map(Number);
+      const tileCenterX = (tileX + 0.5) * TILE;
+      const tileCenterY = (tileY + 0.5) * TILE;
+      if (Phaser.Math.Distance.Between(x, y, tileCenterX, tileCenterY) > radius) continue;
+      this.layer.putTileAt(TILES.FLOOR_A, tileX, tileY);
+      this.bombWallTiles.delete(tileKey);
+    }
+    this.bombs = this.bombs.filter((bomb) => bomb.active);
   }
 
   onPlayerDefeated(): void {
@@ -337,13 +441,14 @@ export default class WorldScene extends Phaser.Scene {
     this.room = { c, r };
     this.changingRoom = true;
     this.player.body.setVelocity(0, 0);
-    this.tweens.add({
-      targets: this.cameras.main,
-      scrollX: c * ROOM_PX_W,
-      scrollY: r * ROOM_PX_H,
-      duration: 300,
-      onComplete: () => { this.changingRoom = false; },
-    });
+    this.cameras.main.pan(
+      (c + 0.5) * ROOM_PX_W,
+      (r + 0.5) * ROOM_PX_H,
+      300,
+      'Sine.easeInOut',
+      false,
+      () => { this.changingRoom = false; },
+    );
   }
 
   freezeAll(): void {
@@ -382,6 +487,8 @@ export default class WorldScene extends Phaser.Scene {
     const justClosedDialogue = Date.now() - this.dialogue.closedAt < 250;
     if (input.interact && !justClosedDialogue) this.tryInteract();
     if (input.attack && !justClosedDialogue) this.combat.tryAttack(time);
+    if (input.boomerang && !justClosedDialogue) this.throwBoomerang();
+    if (input.bomb && !justClosedDialogue) this.placeBomb();
     this.player.applyMovement(input.dir, time);
 
     const roomKey = `${this.room.c},${this.room.r}`;
@@ -392,8 +499,33 @@ export default class WorldScene extends Phaser.Scene {
     this.combat.update(time, localEnemies);
     localEnemies.forEach((enemy) => enemy.updateAI(time, this.player));
 
+    if (this.boomerang?.active) {
+      this.boomerang.update(this.game.loop.delta, this.player);
+      if (this.boomerang?.active) {
+        this.rupeePickups = this.rupeePickups.filter((pickup) => {
+          if (Phaser.Math.Distance.Between(this.boomerang!.x, this.boomerang!.y, pickup.x, pickup.y) > 20) return true;
+          pickup.collect();
+          return false;
+        });
+      }
+      if (this.boomerang?.active && !this.boomerang.returning) {
+        const target = localEnemies.find((enemy) => enemy.state !== 'dead'
+          && Phaser.Math.Distance.Between(this.boomerang!.x, this.boomerang!.y, enemy.x, enemy.y) < enemy.config.radius + 13);
+        if (target) {
+          target.stun(time);
+          this.boomerang.turnBack();
+        }
+      }
+    }
+
     this.pickups = this.pickups.filter((pickup) => {
       if (Phaser.Math.Distance.Between(pickup.x, pickup.y, this.player.x, this.player.y) > 24) return true;
+      pickup.collect();
+      return false;
+    });
+
+    this.rupeePickups = this.rupeePickups.filter((pickup) => {
+      if (Phaser.Math.Distance.Between(pickup.x, pickup.y, this.player.x, this.player.y) > 22) return true;
       pickup.collect();
       return false;
     });

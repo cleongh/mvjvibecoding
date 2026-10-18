@@ -3,9 +3,11 @@ export type ItemId =
   | 'health_potion'
   | 'jewel_moss'
   | 'jewel_ember'
-  | 'jewel_tide';
+  | 'jewel_tide'
+  | 'boomerang'
+  | 'bomb';
 
-export type ItemKind = 'key' | 'consumable' | 'quest';
+export type ItemKind = 'key' | 'consumable' | 'quest' | 'weapon';
 
 export interface ItemDefinition {
   id: ItemId;
@@ -17,7 +19,7 @@ export interface ItemDefinition {
 
 export type RewardContents = { item: ItemId } | { heartPiece: true };
 export type EnemyId = 'slime' | 'skeleton' | 'shooter' | 'boss_moss' | 'boss_ember' | 'boss_tide';
-export type EnemyState = 'idle' | 'chase' | 'windup' | 'attack' | 'recovery' | 'hurt' | 'dead';
+export type EnemyState = 'idle' | 'chase' | 'windup' | 'attack' | 'recovery' | 'hurt' | 'stunned' | 'dead';
 
 export interface EnemyDefinition {
   texture: string;
@@ -31,11 +33,12 @@ export interface EnemyDefinition {
   recovery: number;
   hitRadius: number;
   radius: number;
+  rupeeDrop?: { chance: number; amount: number };
   boss?: boolean;
   scale?: number;
 }
 
-export type BlockKind = 'wall' | 'water' | 'tree';
+export type BlockKind = 'wall' | 'water' | 'tree' | 'bombWall';
 export interface BlockSpec {
   t: BlockKind;
   x: number;
@@ -45,7 +48,7 @@ export interface BlockSpec {
 }
 
 export interface AreaObjectSpec {
-  kind: 'portal' | 'chest' | 'lockedDoor' | 'fountain' | 'npc' | 'pickup';
+  kind: 'portal' | 'chest' | 'lockedDoor' | 'fountain' | 'npc' | 'pickup' | 'shop';
   x: number;
   y: number;
   to?: AreaId;

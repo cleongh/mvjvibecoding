@@ -1,5 +1,9 @@
 # AGENTS.md
 
+## Do not run `npm run build`
+
+Do not run `npm run build` because it conflicts with CI
+
 ## Project
 
 This is a 2D top-down action-adventure game built with Phaser 3 and JavaScript
@@ -17,7 +21,7 @@ Do not copy characters, maps, sprites, music, names or other copyrighted assets 
 
 ## Technology
 
-- Phaser 3
+- Phaser 4
 - TypeScript
 - HTML
 - CSS

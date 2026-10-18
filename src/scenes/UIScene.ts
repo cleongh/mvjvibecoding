@@ -1,11 +1,16 @@
 import Phaser from 'phaser';
-import { jewelIds } from '../data/items.ts';
+import { jewelIds, items, shopCatalog } from '../data/items.ts';
 import type InventorySystem from '../systems/InventorySystem.ts';
 import type DialogueSystem from '../systems/DialogueSystem.ts';
 import type SoundSystem from '../systems/SoundSystem.ts';
+import { GAME_HEIGHT, GAME_WIDTH, ROOM_SCALE, VIEW_Y } from '../data/areas.ts';
 
-const FONT = 'Georgia, serif';
-const textStyle = (size: number, color: string) => ({ fontFamily: FONT, fontSize: `${size}px`, color });
+const FONT = 'MedievalSharp, Georgia, serif';
+const UI_X = GAME_WIDTH / 960;
+const UI_Y = GAME_HEIGHT / 640;
+const uiX = (value: number) => value * UI_X;
+const uiY = (value: number) => value * UI_Y;
+const textStyle = (size: number, color: string) => ({ fontFamily: FONT, fontSize: `${size * UI_Y}px`, color });
 const LINE_DEBOUNCE_MS = 150;
 
 export default class UIScene extends Phaser.Scene {
@@ -18,6 +23,9 @@ export default class UIScene extends Phaser.Scene {
   heartsText!: Phaser.GameObjects.Text;
   piecesText!: Phaser.GameObjects.Text;
   jewelIcons!: Phaser.GameObjects.Image[];
+  boomerangIcon!: Phaser.GameObjects.Image;
+  bombText!: Phaser.GameObjects.Text;
+  rupeeText!: Phaser.GameObjects.Text;
   keyText!: Phaser.GameObjects.Text;
   notice!: Phaser.GameObjects.Text;
   speakerText!: Phaser.GameObjects.Text;
@@ -26,7 +34,9 @@ export default class UIScene extends Phaser.Scene {
   listText!: Phaser.GameObjects.Text;
   detailText!: Phaser.GameObjects.Text;
   footText!: Phaser.GameObjects.Text;
+  panelTitle!: Phaser.GameObjects.Text;
   panelObjects!: Array<Phaser.GameObjects.Rectangle | Phaser.GameObjects.Text>;
+  shopSelected = 0;
   keys!: Record<'inventory' | 'close' | 'up' | 'down' | 'confirm' | 'interact' | 'attack' | 'mute', Phaser.Input.Keyboard.Key>;
 
   constructor() {
@@ -61,39 +71,46 @@ export default class UIScene extends Phaser.Scene {
   }
 
   createHud(): void {
-    this.add.rectangle(480, 32, 960, 64, 0x172b27);
-    this.titleText = this.add.text(16, 6, '', textStyle(14, '#a8ba88'));
-    this.heartsText = this.add.text(16, 24, '', textStyle(26, '#e8644f'));
-    this.piecesText = this.add.text(300, 22, '', textStyle(17, '#f1d989'));
-    this.jewelIcons = jewelIds.map((id, i) => this.add.image(560 + i * 44, 32, `item_${id}`));
-    this.add.image(720, 32, 'item_small_key');
-    this.keyText = this.add.text(742, 22, '', textStyle(17, '#f1e5bd'));
-    this.add.text(944, 22, 'M  Sonido   ·   I  Inventario', textStyle(14, '#a8ba88')).setOrigin(1, 0);
+    const hudCenterY = VIEW_Y * ROOM_SCALE / 2;
+    this.add.rectangle(GAME_WIDTH / 2, hudCenterY, GAME_WIDTH, VIEW_Y * ROOM_SCALE, 0x172b27);
+    this.titleText = this.add.text(uiX(16), ROOM_SCALE * 6, '', textStyle(14, '#a8ba88'));
+    this.heartsText = this.add.text(uiX(16), ROOM_SCALE * 24, '', textStyle(26, '#e8644f'));
+    this.piecesText = this.add.text(uiX(270), ROOM_SCALE * 22, '', textStyle(17, '#f1d989'));
+    this.boomerangIcon = this.add.image(uiX(370), hudCenterY, 'item_boomerang').setScale(ROOM_SCALE).setAlpha(0.2);
+    this.add.text(uiX(388), ROOM_SCALE * 22, 'B', textStyle(15, '#f1e5bd'));
+    this.jewelIcons = jewelIds.map((id, i) => this.add.image(uiX(430 + i * 38), hudCenterY, `item_${id}`).setScale(ROOM_SCALE));
+    this.add.image(uiX(555), hudCenterY, 'item_small_key').setScale(ROOM_SCALE);
+    this.keyText = this.add.text(uiX(577), ROOM_SCALE * 22, '', textStyle(17, '#f1e5bd'));
+    this.add.image(uiX(650), hudCenterY, 'item_bomb').setScale(ROOM_SCALE);
+    this.bombText = this.add.text(uiX(672), ROOM_SCALE * 22, '', textStyle(17, '#f1e5bd'));
+    this.add.image(uiX(700), hudCenterY, 'item_rupee').setScale(ROOM_SCALE * 0.75);
+    this.rupeeText = this.add.text(uiX(724), ROOM_SCALE * 22, '', textStyle(17, '#8fe0a5'));
+    this.add.text(uiX(944), ROOM_SCALE * 22, 'M  Sonido   ·   I  Inventario', textStyle(14, '#a8ba88')).setOrigin(1, 0);
   }
 
   createNotice(): void {
-    this.notice = this.add.text(480, 92, '', {
+    this.notice = this.add.text(GAME_WIDTH / 2, uiY(92), '', {
       ...textStyle(16, '#fff1c3'), backgroundColor: '#172b27ee', padding: { x: 12, y: 7 },
     }).setOrigin(0.5).setAlpha(0).setDepth(10);
   }
 
   createDialogueBox(): void {
     this.dialogueObjects = [
-      this.add.rectangle(480, 565, 900, 130, 0x172b27, 0.97).setStrokeStyle(2, 0x8d8059),
-      this.speakerText = this.add.text(48, 512, '', textStyle(18, '#f1d989')),
-      this.bodyText = this.add.text(48, 544, '', { ...textStyle(18, '#f1e5bd'), wordWrap: { width: 860 }, lineSpacing: 6 }),
-      this.add.text(912, 604, 'E  continuar', textStyle(13, '#a8ba88')).setOrigin(1, 0.5),
+      this.add.rectangle(GAME_WIDTH / 2, uiY(565), uiX(900), uiY(130), 0x172b27, 0.97).setStrokeStyle(2 * UI_Y, 0x8d8059),
+      this.speakerText = this.add.text(uiX(48), uiY(512), '', textStyle(18, '#f1d989')),
+      this.bodyText = this.add.text(uiX(48), uiY(544), '', { ...textStyle(18, '#f1e5bd'), wordWrap: { width: uiX(860) }, lineSpacing: 6 * UI_Y }),
+      this.add.text(uiX(912), uiY(604), 'E  continuar', textStyle(13, '#a8ba88')).setOrigin(1, 0.5),
     ];
     this.dialogueObjects.forEach((object) => object.setDepth(15).setVisible(false));
   }
 
   createInventoryPanel(): void {
-    const background = this.add.rectangle(480, 340, 680, 420, 0x172b27, 0.97).setStrokeStyle(2, 0x8d8059);
-    const title = this.add.text(480, 150, 'INVENTARIO', { ...textStyle(24, '#f1d989'), fontStyle: 'bold' }).setOrigin(0.5);
-    this.listText = this.add.text(170, 190, '', { ...textStyle(20, '#f1e5bd'), lineSpacing: 10 });
-    this.detailText = this.add.text(520, 190, '', { ...textStyle(17, '#f1e5bd'), wordWrap: { width: 260 }, lineSpacing: 6 });
-    this.footText = this.add.text(480, 500, '', textStyle(14, '#a8ba88')).setOrigin(0.5);
-    this.panelObjects = [background, title, this.listText, this.detailText, this.footText];
+    const background = this.add.rectangle(GAME_WIDTH / 2, uiY(340), uiX(680), uiY(420), 0x172b27, 0.97).setStrokeStyle(2 * UI_Y, 0x8d8059);
+    this.panelTitle = this.add.text(GAME_WIDTH / 2, uiY(150), 'INVENTARIO', { ...textStyle(24, '#f1d989'), fontStyle: 'bold' }).setOrigin(0.5);
+    this.listText = this.add.text(uiX(170), uiY(190), '', { ...textStyle(20, '#f1e5bd'), lineSpacing: 10 * UI_Y });
+    this.detailText = this.add.text(uiX(520), uiY(190), '', { ...textStyle(17, '#f1e5bd'), wordWrap: { width: uiX(260) }, lineSpacing: 6 * UI_Y });
+    this.footText = this.add.text(GAME_WIDTH / 2, uiY(500), '', textStyle(14, '#a8ba88')).setOrigin(0.5);
+    this.panelObjects = [background, this.panelTitle, this.listText, this.detailText, this.footText];
     this.panelObjects.forEach((object) => object.setDepth(20).setVisible(false));
   }
 
@@ -104,10 +121,28 @@ export default class UIScene extends Phaser.Scene {
     this.piecesText.setText(`Piezas ${inventory.heartPieces % 4}/4`);
     this.keyText.setText(`x${inventory.count('small_key')}`);
     jewelIds.forEach((id, i) => this.jewelIcons[i].setAlpha(inventory.has(id) ? 1 : 0.2));
+    this.boomerangIcon.setAlpha(inventory.has('boomerang') ? 1 : 0.2);
+    this.bombText.setText(`x${inventory.count('bomb')}`);
+    this.rupeeText.setText(`${inventory.rupees}`);
+    if (inventory.shopOpen) this.panelObjects.forEach((object) => object.setVisible(true));
     if (inventory.paused) this.renderPanel();
   }
 
   renderPanel(): void {
+    if (this.inventory.shopOpen) {
+      this.shopSelected = Phaser.Math.Clamp(this.shopSelected, 0, shopCatalog.length - 1);
+      this.panelTitle.setText('TIENDA DEL BREZAL');
+      this.listText.setText(shopCatalog.map((offer, index) => {
+        const item = items[offer.item];
+        return `${index === this.shopSelected ? '▶ ' : '    '}${item.name}${offer.amount > 1 ? `  x${offer.amount}` : ''}   ${offer.price} rupias`;
+      }).join('\n'));
+      const offer = shopCatalog[this.shopSelected];
+      this.detailText.setText(`${items[offer.item].description}\n\nTienes ${this.inventory.rupees} rupias.`);
+      this.footText.setText('↑ / ↓ elegir   ·   Enter comprar   ·   I / Esc salir');
+      return;
+    }
+
+    this.panelTitle.setText('INVENTARIO');
     const list = this.inventory.list();
     this.selected = Phaser.Math.Clamp(this.selected, 0, Math.max(0, list.length - 1));
     this.listText.setText(list.length
@@ -118,7 +153,7 @@ export default class UIScene extends Phaser.Scene {
       ? `${entry.item.name}\n\n${entry.item.description}${entry.item.type === 'consumable' ? '\n\nEnter: usar' : ''}`
       : '');
     const jewels = jewelIds.filter((id) => this.inventory.has(id)).length;
-    this.footText.setText(`Piezas de corazón: ${this.inventory.heartPieces % 4}/4   ·   Gemas: ${jewels}/3   ·   I / Esc: cerrar`);
+    this.footText.setText(`Piezas de corazón: ${this.inventory.heartPieces % 4}/4   ·   Gemas: ${jewels}/3   ·   B: bumerán   ·   X: bomba   ·   I / Esc: cerrar`);
   }
 
   setPanelOpen(open: boolean): void {
@@ -157,6 +192,23 @@ export default class UIScene extends Phaser.Scene {
         this.soundFx.play('confirm');
         this.dialogue.advance();
       }
+      return;
+    }
+
+    if (this.inventory.shopOpen) {
+      if (pressed.close || pressed.inventory) {
+        this.inventory.closeShop();
+        this.panelObjects.forEach((object) => object.setVisible(false));
+        this.soundFx.play('confirm');
+        return;
+      }
+      if (pressed.up || pressed.down) {
+        const direction = pressed.up ? -1 : 1;
+        this.shopSelected = (this.shopSelected + shopCatalog.length + direction) % shopCatalog.length;
+        this.soundFx.play('confirm');
+      }
+      if (pressed.confirm && this.inventory.purchaseShopItem(this.shopSelected)) this.soundFx.play('pickup');
+      this.renderPanel();
       return;
     }
 

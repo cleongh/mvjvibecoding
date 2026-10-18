@@ -114,5 +114,7 @@ src/star.ts~
 
 out/
 docs/
+dist/
+dist-electron/
 historial.md
 .vscode/settings.json

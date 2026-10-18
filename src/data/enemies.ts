@@ -29,6 +29,7 @@ export const enemies: Record<EnemyId, EnemyDefinition> = {
     recovery: 600,
     hitRadius: 22,
     radius: 11,
+    rupeeDrop: { chance: 0.65, amount: 2 },
   },
   skeleton: {
     texture: 'skeleton',
@@ -42,6 +43,7 @@ export const enemies: Record<EnemyId, EnemyDefinition> = {
     recovery: 700,
     hitRadius: 22,
     radius: 11,
+    rupeeDrop: { chance: 0.45, amount: 3 },
   },
   shooter: {
     texture: 'skeleton',
@@ -55,6 +57,7 @@ export const enemies: Record<EnemyId, EnemyDefinition> = {
     recovery: 800,
     hitRadius: 20,
     radius: 11,
+    rupeeDrop: { chance: 0.6, amount: 3 },
   },
   boss_moss: {
     ...bossBase,
