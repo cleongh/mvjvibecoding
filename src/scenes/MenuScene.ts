@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import logoUrl from '../../assets/logo-brezal.svg?url';
+import logoUrl from '../../assets/logo-brezal.svg?url&no-inline';
 import { GAME_HEIGHT, GAME_WIDTH } from '../data/areas.ts';
 import type SoundSystem from '../systems/SoundSystem.ts';
 

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   shape-rendering="crispEdges"
+   version="1.1"
+   id="svg27"
+   sodipodi:docname="hero.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs27" />
+  <sodipodi:namedview
+     id="namedview27"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="28.84375"
+     inkscape:cx="15.982665"
+     inkscape:cy="16"
+     inkscape:window-width="2867"
+     inkscape:window-height="1134"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="hood" />
+  <title
+     id="title1">Héroe del Brezal</title>
+  <desc
+     id="desc1">Héroe aventurero visto desde arriba, con capa, capucha verde, rostro, cinturón dorado y botas.</desc>
+  <ellipse
+     cx="16"
+     cy="28"
+     rx="11"
+     ry="3"
+     fill="#17251e"
+     opacity=".58"
+     id="ellipse1" />
+  <g
+     id="boots">
+    <path
+       d="M8 23h6v7H8zm10 0h6v7h-6z"
+       fill="#35251f"
+       id="path1" />
+    <path
+       d="M8 26h6v2H8zm10 0h6v2h-6z"
+       fill="#694632"
+       id="path2" />
+    <path
+       d="M8 29h6v1H8zm10 0h6v1h-6z"
+       fill="#201915"
+       id="path3" />
+  </g>
+  <g
+     id="cape">
+    <path
+       d="M7 12h18l3 9-5 8H9l-5-8z"
+       fill="#713c32"
+       id="path4" />
+    <path
+       d="M8 13h16l3 8-5 6H10l-4-6z"
+       fill="#a34d3d"
+       id="path5" />
+    <path
+       d="M8 21h16l-2 6H10z"
+       fill="#7c392f"
+       id="path6" />
+    <path
+       d="M10 15h12v8H10z"
+       fill="#39734b"
+       id="path7" />
+  </g>
+  <g
+     id="tunic">
+    <path
+       d="M9 12h14l3 11H6z"
+       fill="#1e4c37"
+       id="path8" />
+    <path
+       d="M10 13h12l2 9H8z"
+       fill="#43865a"
+       id="path9" />
+    <path
+       d="M8 20h16l1 3H7z"
+       fill="#326a48"
+       id="path10" />
+    <path
+       d="M14 14h4v7h-4z"
+       fill="#36744d"
+       id="path11" />
+    <path
+       d="M9 15H6v6h4zm14 0h3v6h-4z"
+       fill="#e4d5ad"
+       id="path12" />
+    <path
+       d="M10 17h2v3h-2zm10 0h2v3h-2z"
+       fill="#b8c6aa"
+       id="path13" />
+  </g>
+  <g
+     id="face">
+    <path
+       d="M10 6h12v9H10z"
+       fill="#d99c68"
+       id="path14" />
+    <path
+       d="M11 7h10v6H11z"
+       fill="#f0c78c"
+       id="path15" />
+    <path
+       d="M12 11h2v2h-2zm6 0h2v2h-2z"
+       fill="#342923"
+       id="path16" />
+    <path
+       d="M14 14h4v1h-4z"
+       fill="#a45e50"
+       id="path17" />
+    <path
+       d="M9 7h2v6H9zm12 0h2v6h-2z"
+       fill="#d6a879"
+       id="path18" />
+  </g>
+  <g
+     id="hood">
+    <path
+       d="M8 8 11 2h10l3 6v4H8z"
+       fill="#1c382a"
+       id="path19" />
+    <path
+       d="M9 7 12 3h8l3 5v3H9z"
+       fill="#39734b"
+       id="path20" />
+    <path
+       d="M12 4h8l2 4H10z"
+       fill="#57905b"
+       id="path21" />
+    <path
+       d="M8 8h4v4H8zm12 0h4v4h-4z"
+       fill="#234c39"
+       id="path22" />
+    <path
+       d="M13 3h6l-3 4z"
+       fill="#6da16a"
+       id="path23" />
+  </g>
+  <g
+     id="belt">
+    <path
+       d="M9 19h14v3H9z"
+       fill="#b4863b"
+       id="path24" />
+    <path
+       d="M10 19h12v1H10z"
+       fill="#f1d989"
+       id="path25" />
+    <path
+       d="M15 19h3v3h-3z"
+       fill="#f4e2a0"
+       id="path26" />
+    <path
+       d="M16 20h1v1h-1z"
+       fill="#715128"
+       id="path27" />
+  </g>
+</svg>

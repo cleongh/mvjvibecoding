@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import heroSpriteUrl from '../../assets/sprites/hero.svg?url&no-inline';
 import { areas } from '../data/areas.ts';
 import InventorySystem from '../systems/InventorySystem.ts';
 import DialogueSystem from '../systems/DialogueSystem.ts';
@@ -63,24 +64,6 @@ function createTilesets(scene: Phaser.Scene): void {
 }
 
 function createSprites(scene: Phaser.Scene): void {
-  makeTexture(scene, 'hero', 32, 32, (g) => {
-    // Cape and hood establish the silhouette; face, belt and boots remain readable at 32px.
-    g.fillStyle(0x1d3028).fillRect(6, 9, 20, 19);
-    g.fillStyle(0x8a4938).fillRect(8, 13, 16, 14);
-    g.fillStyle(0x2f694a).fillRect(7, 11, 18, 16);
-    g.fillStyle(0x43865a).fillRect(9, 12, 14, 11);
-    g.fillStyle(0x315f45).fillTriangle(8, 22, 24, 22, 16, 30);
-    g.fillStyle(0xf0c78c).fillRect(11, 7, 10, 9);
-    g.fillStyle(0xe3ac70).fillRect(12, 13, 8, 3);
-    g.fillStyle(0x342923).fillRect(12, 10, 2, 2).fillRect(18, 10, 2, 2);
-    g.fillStyle(0x234c39).fillRect(9, 3, 14, 7);
-    g.fillStyle(0x39734b).fillTriangle(7, 7, 25, 7, 16, 0);
-    g.fillStyle(0x1d3028).fillRect(6, 8, 5, 5).fillRect(21, 8, 5, 5);
-    g.fillStyle(0xd9b85f).fillRect(10, 18, 12, 3);
-    g.fillStyle(0xf1d989).fillRect(15, 18, 3, 3);
-    g.fillStyle(0x543a2d).fillRect(10, 26, 5, 4).fillRect(17, 26, 5, 4);
-    g.fillStyle(0xc9d8c6).fillRect(7, 15, 3, 7).fillRect(22, 15, 3, 7);
-  });
   makeTexture(scene, 'sword', 32, 32, (g) => {
     g.fillStyle(0xd8e1d7).fillTriangle(16, 1, 10, 19, 22, 19);
     g.fillStyle(0x8b9b92).fillRect(14, 15, 4, 9);
@@ -288,6 +271,10 @@ function createSprites(scene: Phaser.Scene): void {
 export default class BootScene extends Phaser.Scene {
   constructor() {
     super({ key: 'boot' });
+  }
+
+  preload(): void {
+    this.load.svg('hero', heroSpriteUrl, { width: 32, height: 32 });
   }
 
   create() {
