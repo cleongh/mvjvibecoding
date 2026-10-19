@@ -1,4 +1,14 @@
-# Plantilla para juegos en Phaser
+# Las ruinas del brezal
+
+Este es un juego de acción y aventura en 2D con vista desde arriba, inspirado en los clásicos juegos de 16 bits. El juego presenta un sistema de combate, exploración de mapas conectados, inventario y diálogos.
+
+## Cómo jugar
+- **Movimiento**: Usa las flechas del teclado o las teclas WASD para mover al personaje.
+- **Ataque**: Presiona la tecla `Espacio` o el botón de ataque para realizar un ataque cuerpo a cuerpo.
+- **Interacción**: Presiona la tecla `E` para interactuar con objetos, NPCs o puertas.
+- **Inventario**: Presiona la tecla `I` para abrir tu inventario.
+
+---
 
 ## Instalación
 
