@@ -3,8 +3,10 @@ import Player from '../entities/Player.ts';
 import Enemy from '../entities/Enemy.ts';
 import Boomerang from '../entities/Boomerang.ts';
 import Bomb from '../entities/Bomb.ts';
+import Arrow from '../entities/Arrow.ts';
+import { createEnemy } from '../entities/Gohma.ts';
 import NPC from '../entities/NPC.ts';
-import { Chest, LockedDoor, Fountain, Pickup, RupeePickup, Shopkeeper } from '../entities/Interactables.ts';
+import { Chest, LockedDoor, Fountain, Pickup, RupeePickup, Shopkeeper, ArrowPickup } from '../entities/Interactables.ts';
 import CombatSystem from '../systems/CombatSystem.ts';
 import TransitionSystem from '../systems/TransitionSystem.ts';
 import { areas, TILE, ROOM_W, ROOM_H, ROOM_DATA_W, ROOM_DATA_H, VIEW_Y, ROOM_SCALE, TILES } from '../data/areas.ts';
@@ -51,6 +53,10 @@ export default class WorldScene extends Phaser.Scene {
   player!: Player;
   boomerang: Boomerang | null = null;
   bombs: Bomb[] = [];
+  arrows: Arrow[] = [];
+  arrowPickups: ArrowPickup[] = [];
+  arrowGroup!: Phaser.GameObjects.Group;
+  bowSprite!: Phaser.GameObjects.Image;
   bombWallTiles = new Set<string>();
   combat!: CombatSystem;
   room: RoomPosition = { c: 0, r: 0 };
@@ -77,11 +83,15 @@ export default class WorldScene extends Phaser.Scene {
     this.projectiles = [];
     this.boomerang = null;
     this.bombs = [];
+    this.arrows = [];
+    this.arrowPickups = [];
     this.bombWallTiles.clear();
     this.interactables = [];
     this.solids = this.add.group();
     this.enemyGroup = this.add.group();
     this.projectileGroup = this.add.group();
+    this.arrowGroup = this.add.group();
+    this.bowSprite = this.add.image(0, 0, 'item_bow').setDepth(8).setVisible(false);
     this.ended = false;
     this.changingRoom = false;
     this.blockedSince = null;
@@ -98,6 +108,33 @@ export default class WorldScene extends Phaser.Scene {
     this.physics.add.collider(this.enemyGroup, this.solids);
     this.physics.add.collider(this.projectileGroup, this.layer, (proj) => { proj.destroy(); });
     this.physics.add.overlap(this.projectileGroup, this.solids, (proj) => { proj.destroy(); });
+    this.physics.add.collider(this.arrowGroup, this.layer, (arrowObj) => {
+      const arrow = arrowObj as Arrow;
+      this.soundFx.play('arrowHit');
+      this.spawnSparks(arrow.x, arrow.y, 0xd8c89c);
+      arrow.destroy();
+      this.arrows = this.arrows.filter((a) => a !== arrow);
+    });
+    this.physics.add.overlap(this.arrowGroup, this.solids, (arrowObj) => {
+      const arrow = arrowObj as Arrow;
+      this.soundFx.play('arrowHit');
+      this.spawnSparks(arrow.x, arrow.y, 0xd8c89c);
+      arrow.destroy();
+      this.arrows = this.arrows.filter((a) => a !== arrow);
+    });
+    this.physics.add.overlap(this.arrowGroup, this.enemyGroup, (arrowObj, enemyObj) => {
+      const arrow = arrowObj as Arrow;
+      const enemy = enemyObj as Enemy;
+      if (!arrow.active || !enemy.active || enemy.state === 'dead') return;
+      this.arrows = this.arrows.filter((a) => a !== arrow);
+      arrow.destroy();
+      const time = this.time.now;
+      if (typeof (enemy as any).takeArrowHit === 'function') {
+        (enemy as any).takeArrowHit(arrow.damage, arrow.x, arrow.y, time);
+      } else {
+        enemy.takeHit(arrow.damage, arrow.x, arrow.y, time);
+      }
+    });
     this.physics.add.overlap(this.projectileGroup, this.player, (projObj, playerObj) => {
       const proj = projObj as Phaser.Physics.Arcade.Sprite;
       const player = playerObj as Player;
@@ -232,7 +269,7 @@ export default class WorldScene extends Phaser.Scene {
       const roomKey = `${room.c},${room.r}`;
       for (const [type, tx, ty] of room.enemies || []) {
         const { x, y } = this.toPixels(room, tx, ty);
-        this.addEnemy(new Enemy(this, x, y, type, roomKey));
+        this.addEnemy(createEnemy(this, x, y, type, roomKey));
       }
       (room.objects || []).forEach((spec, index) => {
         this.buildObject(room, spec, `${this.areaId}:${roomKey}:${index}`);
@@ -258,7 +295,7 @@ export default class WorldScene extends Phaser.Scene {
       switch (entityKind) {
         case 'enemy': {
           const enemyType = properties.enemy as EnemyId | undefined;
-          if (enemyType) this.addEnemy(new Enemy(this, object.x, object.y, enemyType, `${room.c},${room.r}`));
+          if (enemyType) this.addEnemy(createEnemy(this, object.x, object.y, enemyType, `${room.c},${room.r}`));
           break;
         }
         case 'portal': {
@@ -389,7 +426,7 @@ export default class WorldScene extends Phaser.Scene {
       return;
     }
     const { x, y } = this.toPixels(boss, boss.x, boss.y);
-    this.addEnemy(new Enemy(this, x, y, boss.type, `${boss.c},${boss.r}`));
+    this.addEnemy(createEnemy(this, x, y, boss.type, `${boss.c},${boss.r}`));
   }
 
   spawnBossRewards(): void {
@@ -405,10 +442,53 @@ export default class WorldScene extends Phaser.Scene {
     if (drop && Math.random() < drop.chance) {
       this.rupeePickups.push(new RupeePickup(this, enemy.x, enemy.y, drop.amount));
     }
+    if (this.inventory.has('bow') && Math.random() < 0.28) {
+      this.arrowPickups.push(new ArrowPickup(this, enemy.x, enemy.y, 3));
+    }
     if (!enemy.isBoss) return;
     this.inventory.setFlag(this.area.boss.flag);
     this.inventory.notify('¡Jefe derrotado!');
     this.spawnBossRewards();
+  }
+
+  spawnSparks(x: number, y: number, color = 0xffee88): void {
+    for (let i = 0; i < 4; i++) {
+      const angle = (i * Math.PI) / 2 + Math.random() * 0.4;
+      const spark = this.add.circle(x, y, 2.5, color, 0.9).setDepth(14);
+      const dist = 14 + Math.random() * 10;
+      this.tweens.add({
+        targets: spark,
+        x: x + Math.cos(angle) * dist,
+        y: y + Math.sin(angle) * dist,
+        alpha: 0,
+        scale: 0.2,
+        duration: 180,
+        onComplete: () => spark.destroy(),
+      });
+    }
+  }
+
+  shootBow(): void {
+    if (!this.inventory.has('bow')) return;
+    if (this.inventory.count('arrow') <= 0) {
+      this.soundFx.play('clink');
+      this.inventory.notify('¡Sin flechas!');
+      return;
+    }
+    this.inventory.remove('arrow', 1);
+    const { x, y } = this.player.facing;
+    const arrow = new Arrow(this, this.player.x + x * 18, this.player.y + y * 18, this.player.facing);
+    this.arrows.push(arrow);
+    this.arrowGroup.add(arrow);
+    this.soundFx.play('bow');
+
+    this.bowSprite
+      .setPosition(this.player.x + x * 14, this.player.y + y * 14)
+      .setRotation(Math.atan2(y, x) + Math.PI / 2)
+      .setVisible(true);
+    this.time.delayedCall(120, () => {
+      if (this.bowSprite?.active) this.bowSprite.setVisible(false);
+    });
   }
 
   throwBoomerang(): void {
@@ -582,6 +662,7 @@ export default class WorldScene extends Phaser.Scene {
     if (input.attack && !justClosedDialogue) this.combat.tryAttack(time);
     if (input.boomerang && !justClosedDialogue) this.throwBoomerang();
     if (input.bomb && !justClosedDialogue) this.placeBomb();
+    if (input.bow && !justClosedDialogue) this.shootBow();
     this.player.applyMovement(input.dir, time);
 
     const roomKey = `${this.room.c},${this.room.r}`;
@@ -596,6 +677,11 @@ export default class WorldScene extends Phaser.Scene {
       this.boomerang.update(this.game.loop.delta, this.player);
       if (this.boomerang?.active) {
         this.rupeePickups = this.rupeePickups.filter((pickup) => {
+          if (Phaser.Math.Distance.Between(this.boomerang!.x, this.boomerang!.y, pickup.x, pickup.y) > 20) return true;
+          pickup.collect();
+          return false;
+        });
+        this.arrowPickups = this.arrowPickups.filter((pickup) => {
           if (Phaser.Math.Distance.Between(this.boomerang!.x, this.boomerang!.y, pickup.x, pickup.y) > 20) return true;
           pickup.collect();
           return false;
@@ -622,6 +708,23 @@ export default class WorldScene extends Phaser.Scene {
       pickup.collect();
       return false;
     });
+
+    this.arrowPickups = this.arrowPickups.filter((pickup) => {
+      if (!pickup.active) return false;
+      if (Phaser.Math.Distance.Between(pickup.x, pickup.y, this.player.x, this.player.y) > 22) return true;
+      pickup.collect();
+      return false;
+    });
+
+    const rx = this.room.c * ROOM_PX_W;
+    const ry = this.room.r * ROOM_PX_H;
+    for (const arrow of this.arrows) {
+      if (!arrow.active) continue;
+      if (arrow.x < rx || arrow.x > rx + ROOM_PX_W || arrow.y < ry || arrow.y > ry + ROOM_PX_H) {
+        arrow.destroy();
+      }
+    }
+    this.arrows = this.arrows.filter((a) => a.active);
 
     this.transitions.update(this.player);
     this.updateRoom();

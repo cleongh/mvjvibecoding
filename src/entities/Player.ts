@@ -13,7 +13,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
   invulnerableUntil = 0;
   knockbackUntil = 0;
   shieldSprite: Phaser.GameObjects.Image;
-  keys!: Record<'up' | 'down' | 'left' | 'right' | 'attack' | 'interact' | 'boomerang' | 'bomb', Phaser.Input.Keyboard.Key>;
+  keys!: Record<'up' | 'down' | 'left' | 'right' | 'attack' | 'interact' | 'boomerang' | 'bomb' | 'bow' | 'bowAlt', Phaser.Input.Keyboard.Key>;
   cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 
   constructor(scene: WorldScene, x: number, y: number, inventory: InventorySystem) {
@@ -29,12 +29,12 @@ export default class Player extends Phaser.GameObjects.Sprite {
     this.knockbackUntil = 0;
     this.shieldSprite = scene.add.image(0, 0, 'shield').setDepth(8).setVisible(false);
     this.keys = scene.input.keyboard!.addKeys({
-      up: 'W', down: 'S', left: 'A', right: 'D', attack: 'SPACE', interact: 'E', boomerang: 'B', bomb: 'X',
+      up: 'W', down: 'S', left: 'A', right: 'D', attack: 'SPACE', interact: 'E', boomerang: 'B', bomb: 'X', bow: 'C', bowAlt: 'F',
     }) as typeof this.keys;
     this.cursors = scene.input.keyboard!.createCursorKeys();
   }
 
-  readInput(): { dir: Phaser.Math.Vector2; attack: boolean; interact: boolean; boomerang: boolean; bomb: boolean } {
+  readInput(): { dir: Phaser.Math.Vector2; attack: boolean; interact: boolean; boomerang: boolean; bomb: boolean; bow: boolean } {
     const { keys, cursors } = this;
     const { JustDown } = Phaser.Input.Keyboard;
     const dir = new Phaser.Math.Vector2(
@@ -47,6 +47,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
       interact: JustDown(keys.interact),
       boomerang: JustDown(keys.boomerang),
       bomb: JustDown(keys.bomb),
+      bow: JustDown(keys.bow) || JustDown(keys.bowAlt),
     };
   }
 

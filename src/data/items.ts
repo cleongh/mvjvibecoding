@@ -44,12 +44,25 @@ export const items = {
     type: 'weapon',
     description: 'Colócala con X. Daña a quien alcance y rompe muros agrietados.',
   },
+  bow: {
+    id: 'bow',
+    name: 'Arco de tejo',
+    type: 'weapon',
+    description: 'Dispara veloces flechas con C. Acierta a puntos débiles desde lejos.',
+  },
+  arrow: {
+    id: 'arrow',
+    name: 'Flechas',
+    type: 'weapon',
+    description: 'Munición para el arco. Cada disparo consume una flecha.',
+  },
 } satisfies Record<ItemId, ItemDefinition>;
 
 export const jewelIds: ItemId[] = ['jewel_moss', 'jewel_ember', 'jewel_tide'];
 
 export const shopCatalog = [
   { item: 'bomb', amount: 3, price: 8 },
+  { item: 'arrow', amount: 10, price: 6 },
   { item: 'small_key', amount: 1, price: 12 },
   { item: 'health_potion', amount: 1, price: 10 },
 ] as const satisfies ReadonlyArray<{ item: ItemId; amount: number; price: number }>;

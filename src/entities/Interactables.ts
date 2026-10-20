@@ -8,6 +8,17 @@ function grantReward(inventory: WorldScene['inventory'], contents: RewardContent
     inventory.addHeartPiece();
     return;
   }
+  if (contents.item === 'bow') {
+    inventory.add('bow', 1);
+    inventory.add('arrow', 15);
+    inventory.notify(`Has conseguido: ${items.bow.name} y 15 flechas`);
+    return;
+  }
+  if (contents.item === 'arrow') {
+    inventory.add('arrow', 10);
+    inventory.notify('Has conseguido: 10 flechas');
+    return;
+  }
   inventory.add(contents.item);
   inventory.notify(`Has conseguido: ${items[contents.item].name}`);
 }
@@ -134,6 +145,27 @@ export class RupeePickup extends Phaser.GameObjects.Image {
 
   collect(): void {
     this.scene.inventory.addRupees(this.value);
+    this.scene.soundFx.play('pickup');
+    this.destroy();
+  }
+}
+
+
+export class ArrowPickup extends Phaser.GameObjects.Image {
+  declare scene: WorldScene;
+  readonly amount: number;
+
+  constructor(scene: WorldScene, x: number, y: number, amount = 3) {
+    super(scene, x, y, 'item_arrow');
+    scene.add.existing(this);
+    this.setDepth(5);
+    this.amount = amount;
+    scene.tweens.add({ targets: this, y: y - 4, duration: 420, yoyo: true, repeat: -1 });
+  }
+
+  collect(): void {
+    this.scene.inventory.add('arrow', this.amount);
+    this.scene.inventory.notify(`+${this.amount} flechas`);
     this.scene.soundFx.play('pickup');
     this.destroy();
   }

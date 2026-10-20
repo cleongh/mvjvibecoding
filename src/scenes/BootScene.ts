@@ -35,6 +35,93 @@ function drawBoss(g: Phaser.GameObjects.Graphics, color: number): void {
   g.fillStyle(0xf1d989).fillCircle(32, 19, 3);
 }
 
+
+function drawGohma(g: Phaser.GameObjects.Graphics, eyeState: 'closed' | 'open' | 'stunned'): void {
+  g.fillStyle(0x111a16, 0.65).fillEllipse(32, 58, 54, 12);
+
+  g.lineStyle(4, 0x1f2e24).beginPath().moveTo(22, 30).lineTo(9, 15).lineTo(4, 38).strokePath();
+  g.lineStyle(2, 0x3c5443).beginPath().moveTo(22, 29).lineTo(9, 16).lineTo(5, 37).strokePath();
+  g.lineStyle(4, 0x1f2e24).beginPath().moveTo(22, 38).lineTo(7, 43).lineTo(9, 56).strokePath();
+  g.lineStyle(2, 0x3c5443).beginPath().moveTo(22, 37).lineTo(8, 42).lineTo(10, 55).strokePath();
+
+  g.lineStyle(4, 0x1f2e24).beginPath().moveTo(42, 30).lineTo(55, 15).lineTo(60, 38).strokePath();
+  g.lineStyle(2, 0x3c5443).beginPath().moveTo(42, 29).lineTo(55, 16).lineTo(59, 37).strokePath();
+  g.lineStyle(4, 0x1f2e24).beginPath().moveTo(42, 38).lineTo(57, 43).lineTo(55, 56).strokePath();
+  g.lineStyle(2, 0x3c5443).beginPath().moveTo(42, 37).lineTo(56, 42).lineTo(54, 55).strokePath();
+
+  g.fillStyle(0x231812).fillTriangle(25, 46, 28, 44, 23, 56);
+  g.fillStyle(0xb88846).fillTriangle(24, 51, 26, 48, 23, 56);
+  g.fillStyle(0x231812).fillTriangle(39, 46, 36, 44, 41, 56);
+  g.fillStyle(0xb88846).fillTriangle(40, 51, 38, 48, 41, 56);
+
+  g.fillStyle(0x1a261e).fillEllipse(32, 34, 38, 30);
+  g.fillStyle(0x2e4235).fillEllipse(32, 33, 34, 26);
+  g.fillStyle(0x425e4c).fillTriangle(16, 26, 22, 18, 25, 28);
+  g.fillStyle(0x425e4c).fillTriangle(48, 26, 42, 18, 39, 28);
+  g.fillStyle(0x243329).fillRect(20, 20, 24, 5);
+
+  g.fillStyle(0x121a15).fillCircle(32, 33, 13);
+
+  if (eyeState === 'closed') {
+    g.fillStyle(0x2a3d31).beginPath().arc(32, 33, 11, Math.PI, 0, false).closePath().fillPath();
+    g.fillStyle(0x203026).beginPath().arc(32, 33, 11, 0, Math.PI, false).closePath().fillPath();
+    g.lineStyle(2, 0x101712).beginPath().moveTo(21, 33).lineTo(43, 33).strokePath();
+    g.fillStyle(0x476350).fillRect(24, 25, 16, 2);
+  } else if (eyeState === 'open') {
+    g.fillStyle(0xdd2d16).fillCircle(32, 33, 11);
+    g.fillStyle(0xf06822).fillCircle(32, 33, 9);
+    g.fillStyle(0xffcb33).fillCircle(32, 33, 6);
+    g.fillStyle(0x1f0303).fillCircle(32, 33, 3.5);
+    g.fillStyle(0xffffff).fillCircle(30, 30, 2);
+  } else {
+    g.fillStyle(0x35544d).fillCircle(32, 33, 11);
+    g.fillStyle(0x7be3d9).fillCircle(32, 33, 8);
+    g.lineStyle(2, 0xfce488).beginPath().moveTo(27, 28).lineTo(37, 38).moveTo(37, 28).lineTo(27, 38).strokePath();
+    g.fillStyle(0xffffff, 0.85).fillCircle(32, 33, 2);
+  }
+}
+
+function drawGohmaLarva(g: Phaser.GameObjects.Graphics): void {
+  g.fillStyle(0x111a16, 0.55).fillEllipse(12, 21, 18, 5);
+  g.lineStyle(2, 0x1f2e24).beginPath()
+    .moveTo(7, 10).lineTo(3, 7).lineTo(2, 14)
+    .moveTo(7, 14).lineTo(3, 16).lineTo(4, 21)
+    .moveTo(17, 10).lineTo(21, 7).lineTo(22, 14)
+    .moveTo(17, 14).lineTo(21, 16).lineTo(20, 21)
+    .strokePath();
+  g.fillStyle(0x283b2f).fillEllipse(12, 12, 14, 11);
+  g.fillStyle(0x3a5443).fillEllipse(12, 11, 10, 8);
+  g.fillStyle(0xdd2d16).fillCircle(12, 11, 3.5);
+  g.fillStyle(0xffca33).fillCircle(12, 11, 2);
+  g.fillStyle(0x1f0303).fillCircle(12, 11, 1);
+}
+
+function drawArrow(g: Phaser.GameObjects.Graphics): void {
+  g.fillStyle(0x9c683b).fillRect(4, 5, 20, 2);
+  g.fillStyle(0xdbe2e3).fillTriangle(2, 2, 7, 5, 2, 6);
+  g.fillStyle(0xdbe2e3).fillTriangle(2, 10, 7, 7, 2, 6);
+  g.fillStyle(0x3a6b8c).fillRect(4, 5, 3, 2);
+  g.fillStyle(0xdbe2e3).fillTriangle(23, 2, 31, 6, 23, 10);
+  g.fillStyle(0x7c8a8e).fillTriangle(23, 6, 31, 6, 23, 10);
+  g.fillStyle(0xffffff).fillRect(24, 5, 3, 2);
+}
+
+function drawItemBow(g: Phaser.GameObjects.Graphics): void {
+  g.lineStyle(4, 0x6e3d1c).beginPath().arc(19, 16, 12, 1.9, 4.38, false).strokePath();
+  g.lineStyle(2, 0xb86f37).beginPath().arc(19, 16, 12, 1.9, 4.38, false).strokePath();
+  g.fillStyle(0x362112).fillRect(6, 14, 4, 4);
+  g.lineStyle(1.5, 0xedeae4).beginPath().moveTo(11, 5).lineTo(11, 27).strokePath();
+  g.fillStyle(0xdfc082).fillCircle(11, 5, 1.5).fillCircle(11, 27, 1.5);
+}
+
+function drawItemArrow(g: Phaser.GameObjects.Graphics): void {
+  g.lineStyle(2.5, 0x9c683b).beginPath().moveTo(7, 25).lineTo(23, 9).strokePath();
+  g.fillStyle(0xdbe2e3).fillTriangle(5, 27, 10, 26, 8, 21);
+  g.fillStyle(0x3a6b8c).fillTriangle(6, 27, 12, 23, 7, 22);
+  g.fillStyle(0xdbe2e3).fillTriangle(22, 6, 28, 4, 26, 10);
+  g.fillStyle(0xffffff).fillCircle(25, 7, 1.5);
+}
+
 function createTilesets(scene: Phaser.Scene): void {
   for (const area of Object.values(areas)) {
     const t = area.theme;
@@ -100,6 +187,13 @@ function createSprites(scene: Phaser.Scene): void {
   makeTexture(scene, 'boss_moss', 64, 64, (g) => drawBoss(g, 0x4f8f4f));
   makeTexture(scene, 'boss_ember', 64, 64, (g) => drawBoss(g, 0xd0562f));
   makeTexture(scene, 'boss_tide', 64, 64, (g) => drawBoss(g, 0x3f78c8));
+  makeTexture(scene, 'boss_gohma', 64, 64, (g) => drawGohma(g, 'closed'));
+  makeTexture(scene, 'boss_gohma_open', 64, 64, (g) => drawGohma(g, 'open'));
+  makeTexture(scene, 'boss_gohma_stunned', 64, 64, (g) => drawGohma(g, 'stunned'));
+  makeTexture(scene, 'gohma_larva', 24, 24, (g) => drawGohmaLarva(g));
+  makeTexture(scene, 'arrow', 32, 12, (g) => drawArrow(g));
+  makeTexture(scene, 'item_bow', 32, 32, (g) => drawItemBow(g));
+  makeTexture(scene, 'item_arrow', 32, 32, (g) => drawItemArrow(g));
   makeTexture(scene, 'chest_closed', 32, 32, (g) => {
     g.fillStyle(0x1d1713).fillEllipse(16, 27, 28, 7);
     g.fillStyle(0x4b2d20).fillRect(2, 10, 28, 18);

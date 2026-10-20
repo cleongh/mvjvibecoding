@@ -1,4 +1,4 @@
-export type SoundCue = 'sword' | 'boomerang' | 'bomb' | 'explosion' | 'hit' | 'hurt' | 'enemyAttack' | 'chest' | 'pickup' | 'heart' | 'unlock' | 'jewel' | 'confirm';
+export type SoundCue = 'sword' | 'boomerang' | 'bomb' | 'explosion' | 'hit' | 'hurt' | 'enemyAttack' | 'chest' | 'pickup' | 'heart' | 'unlock' | 'jewel' | 'confirm' | 'bow' | 'arrowHit' | 'clink' | 'gohmaScreech';
 
 type Note = { frequency: number; duration: number; waveform?: OscillatorType; volume?: number };
 type ThemeNote = readonly [beat: number, midi: number, duration: number, volume?: number];
@@ -82,6 +82,10 @@ const cues: Record<SoundCue, Note[]> = {
   unlock: [{ frequency: 300, duration: 0.1 }, { frequency: 450, duration: 0.14 }],
   jewel: [{ frequency: 392, duration: 0.12 }, { frequency: 523, duration: 0.12 }, { frequency: 659, duration: 0.12 }, { frequency: 784, duration: 0.3 }],
   confirm: [{ frequency: 560, duration: 0.055, volume: 0.025 }],
+  bow: [{ frequency: 480, duration: 0.04, waveform: 'triangle', volume: 0.05 }, { frequency: 780, duration: 0.08, waveform: 'sine', volume: 0.04 }],
+  arrowHit: [{ frequency: 260, duration: 0.04, waveform: 'square', volume: 0.05 }, { frequency: 120, duration: 0.08, waveform: 'triangle', volume: 0.04 }],
+  clink: [{ frequency: 1400, duration: 0.06, waveform: 'sine', volume: 0.06 }, { frequency: 1900, duration: 0.09, waveform: 'triangle', volume: 0.04 }],
+  gohmaScreech: [{ frequency: 720, duration: 0.09, waveform: 'sawtooth', volume: 0.07 }, { frequency: 480, duration: 0.12, waveform: 'square', volume: 0.07 }, { frequency: 320, duration: 0.22, waveform: 'sawtooth', volume: 0.08 }],
 };
 
 export default class SoundSystem {

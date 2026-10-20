@@ -5,7 +5,9 @@ export type ItemId =
   | 'jewel_ember'
   | 'jewel_tide'
   | 'boomerang'
-  | 'bomb';
+  | 'bomb'
+  | 'bow'
+  | 'arrow';
 
 export type ItemKind = 'key' | 'consumable' | 'quest' | 'weapon';
 
@@ -18,7 +20,7 @@ export interface ItemDefinition {
 }
 
 export type RewardContents = { item: ItemId } | { heartPiece: true };
-export type EnemyId = 'slime' | 'skeleton' | 'shooter' | 'boss_moss' | 'boss_ember' | 'boss_tide';
+export type EnemyId = 'slime' | 'skeleton' | 'shooter' | 'boss_moss' | 'boss_ember' | 'boss_tide' | 'boss_gohma' | 'gohma_larva';
 export type EnemyState = 'idle' | 'chase' | 'windup' | 'attack' | 'recovery' | 'hurt' | 'stunned' | 'dead';
 
 export interface EnemyDefinition {

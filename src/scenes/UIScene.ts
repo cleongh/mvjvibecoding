@@ -24,6 +24,8 @@ export default class UIScene extends Phaser.Scene {
   piecesText!: Phaser.GameObjects.Text;
   jewelIcons!: Phaser.GameObjects.Image[];
   boomerangIcon!: Phaser.GameObjects.Image;
+  bowIcon!: Phaser.GameObjects.Image;
+  arrowText!: Phaser.GameObjects.Text;
   bombText!: Phaser.GameObjects.Text;
   rupeeText!: Phaser.GameObjects.Text;
   keyText!: Phaser.GameObjects.Text;
@@ -75,16 +77,19 @@ export default class UIScene extends Phaser.Scene {
     this.add.rectangle(GAME_WIDTH / 2, hudCenterY, GAME_WIDTH, VIEW_Y * ROOM_SCALE, 0x172b27);
     this.titleText = this.add.text(uiX(16), ROOM_SCALE * 6, '', textStyle(14, '#a8ba88'));
     this.heartsText = this.add.text(uiX(16), ROOM_SCALE * 24, '', textStyle(26, '#e8644f'));
-    this.piecesText = this.add.text(uiX(270), ROOM_SCALE * 22, '', textStyle(17, '#f1d989'));
-    this.boomerangIcon = this.add.image(uiX(370), hudCenterY, 'item_boomerang').setScale(ROOM_SCALE).setAlpha(0.2);
-    this.add.text(uiX(388), ROOM_SCALE * 22, 'B', textStyle(15, '#f1e5bd'));
-    this.jewelIcons = jewelIds.map((id, i) => this.add.image(uiX(430 + i * 38), hudCenterY, `item_${id}`).setScale(ROOM_SCALE));
-    this.add.image(uiX(555), hudCenterY, 'item_small_key').setScale(ROOM_SCALE);
-    this.keyText = this.add.text(uiX(577), ROOM_SCALE * 22, '', textStyle(17, '#f1e5bd'));
-    this.add.image(uiX(650), hudCenterY, 'item_bomb').setScale(ROOM_SCALE);
-    this.bombText = this.add.text(uiX(672), ROOM_SCALE * 22, '', textStyle(17, '#f1e5bd'));
-    this.add.image(uiX(700), hudCenterY, 'item_rupee').setScale(ROOM_SCALE * 0.75);
-    this.rupeeText = this.add.text(uiX(724), ROOM_SCALE * 22, '', textStyle(17, '#8fe0a5'));
+    this.piecesText = this.add.text(uiX(255), ROOM_SCALE * 22, '', textStyle(16, '#f1d989'));
+    this.boomerangIcon = this.add.image(uiX(340), hudCenterY, 'item_boomerang').setScale(ROOM_SCALE * 0.9).setAlpha(0.2);
+    this.add.text(uiX(356), ROOM_SCALE * 22, 'B', textStyle(14, '#f1e5bd'));
+    this.bowIcon = this.add.image(uiX(392), hudCenterY, 'item_bow').setScale(ROOM_SCALE * 0.9).setAlpha(0.2);
+    this.add.text(uiX(408), ROOM_SCALE * 22, 'C', textStyle(14, '#f1e5bd'));
+    this.arrowText = this.add.text(uiX(424), ROOM_SCALE * 22, '', textStyle(16, '#f1e5bd'));
+    this.jewelIcons = jewelIds.map((id, i) => this.add.image(uiX(490 + i * 34), hudCenterY, `item_${id}`).setScale(ROOM_SCALE * 0.9));
+    this.add.image(uiX(605), hudCenterY, 'item_small_key').setScale(ROOM_SCALE * 0.9);
+    this.keyText = this.add.text(uiX(623), ROOM_SCALE * 22, '', textStyle(16, '#f1e5bd'));
+    this.add.image(uiX(675), hudCenterY, 'item_bomb').setScale(ROOM_SCALE * 0.9);
+    this.bombText = this.add.text(uiX(693), ROOM_SCALE * 22, '', textStyle(16, '#f1e5bd'));
+    this.add.image(uiX(745), hudCenterY, 'item_rupee').setScale(ROOM_SCALE * 0.7);
+    this.rupeeText = this.add.text(uiX(765), ROOM_SCALE * 22, '', textStyle(16, '#8fe0a5'));
     this.add.text(uiX(944), ROOM_SCALE * 22, 'M  Sonido   ·   I  Inventario', textStyle(14, '#a8ba88')).setOrigin(1, 0);
   }
 
@@ -122,6 +127,8 @@ export default class UIScene extends Phaser.Scene {
     this.keyText.setText(`x${inventory.count('small_key')}`);
     jewelIds.forEach((id, i) => this.jewelIcons[i].setAlpha(inventory.has(id) ? 1 : 0.2));
     this.boomerangIcon.setAlpha(inventory.has('boomerang') ? 1 : 0.2);
+    this.bowIcon.setAlpha(inventory.has('bow') ? 1 : 0.2);
+    this.arrowText.setText(inventory.has('bow') ? `x${inventory.count('arrow')}` : '');
     this.bombText.setText(`x${inventory.count('bomb')}`);
     this.rupeeText.setText(`${inventory.rupees}`);
     if (inventory.shopOpen) this.panelObjects.forEach((object) => object.setVisible(true));
@@ -153,7 +160,7 @@ export default class UIScene extends Phaser.Scene {
       ? `${entry.item.name}\n\n${entry.item.description}${entry.item.type === 'consumable' ? '\n\nEnter: usar' : ''}`
       : '');
     const jewels = jewelIds.filter((id) => this.inventory.has(id)).length;
-    this.footText.setText(`Piezas de corazón: ${this.inventory.heartPieces % 4}/4   ·   Gemas: ${jewels}/3   ·   B: bumerán   ·   X: bomba   ·   I / Esc: cerrar`);
+    this.footText.setText(`Piezas de corazón: ${this.inventory.heartPieces % 4}/4   ·   Gemas: ${jewels}/3   ·   B: bumerán   ·   C: arco   ·   X: bomba   ·   I / Esc: cerrar`);
   }
 
   setPanelOpen(open: boolean): void {

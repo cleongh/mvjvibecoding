@@ -169,7 +169,7 @@ export const areas = {
     defaultSpawn: 'entrance',
     spawns: { entrance: { c: 0, r: 1, x: 14, y: 12 } },
     links: [[0, 0, 0, 1], [0, 1, 1, 1], [1, 0, 1, 1]],
-    boss: { c: 1, r: 0, x: 14, y: 6, type: 'boss_moss', jewel: 'jewel_moss', flag: 'dungeon1:boss' },
+    boss: { c: 1, r: 0, x: 14, y: 6, type: 'boss_gohma', jewel: 'jewel_moss', flag: 'dungeon1:boss' },
     rooms: [
       {
         c: 0, r: 1, blocks: pillars(),
@@ -184,12 +184,12 @@ export const areas = {
       {
         c: 0, r: 0, blocks: pillars(),
         enemies: [['skeleton', 10, 7], ['slime', 19, 10]],
-        objects: [chest(piece)],
+        objects: [{ kind: 'chest', x: 26, y: 3, contents: { item: 'bow' } }],
       },
       {
         c: 1, r: 0, blocks: pillars(),
         enemies: [],
-        objects: [{ kind: 'lockedDoor', x: 14, y: 17 }],
+        objects: [{ kind: 'lockedDoor', x: 14, y: 17 }, { kind: 'pickup', x: 14, y: 12, contents: { item: 'arrow' } }],
       },
     ],
   },
